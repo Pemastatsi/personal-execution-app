@@ -121,6 +121,7 @@ ThemeData astraTheme(bool dark) {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      insetPadding: const EdgeInsets.fromLTRB(24, 0, 24, 145),
       backgroundColor: c.ink,
       contentTextStyle: TextStyle(color: c.paper),
     ),
