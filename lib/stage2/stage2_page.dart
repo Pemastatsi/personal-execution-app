@@ -112,16 +112,16 @@ class _Stage2PageState extends State<Stage2Page> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Wrap(
+                Wrap(
                   spacing: 12,
                   runSpacing: 8,
                   children: [
                     OutlinedButton.icon(
                       onPressed: null,
-                      icon: Icon(Icons.image_outlined),
-                      label: Text('Attach screenshot'),
+                      icon: const Icon(Icons.image_outlined),
+                      label: const Text('Attach screenshot'),
                     ),
-                    FilledButton(onPressed: null, child: Text('Send')),
+                    const FilledButton(onPressed: null, child: Text('Send')),
                   ],
                 ),
                 const SizedBox(height: 8),
