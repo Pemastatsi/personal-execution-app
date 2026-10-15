@@ -35,13 +35,21 @@ class SqliteStore implements CheckpointStore {
 
   @override
   Future<Map<String, dynamic>?> read() async {
-    final rows = await database.query('checkpoint', where: 'id = ?', whereArgs: [1]);
-    return rows.isEmpty ? null : jsonDecode(rows.first['value'] as String) as Map<String, dynamic>;
+    final rows = await database.query(
+      'checkpoint',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    return rows.isEmpty
+        ? null
+        : jsonDecode(rows.first['value'] as String) as Map<String, dynamic>;
   }
 
   @override
   Future<void> write(Map<String, dynamic> value) async {
-    await database.insert('checkpoint', {'id': 1, 'value': jsonEncode(value)},
-      conflictAlgorithm: ConflictAlgorithm.replace);
+    await database.insert('checkpoint', {
+      'id': 1,
+      'value': jsonEncode(value),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 }

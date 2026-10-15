@@ -22,3 +22,6 @@ flutter:
     - family: Newsreader
       fonts:
         - asset: assets/fonts/Newsreader.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono.ttf
