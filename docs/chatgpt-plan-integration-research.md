@@ -2,6 +2,35 @@
 
 Research date: 2026-10-15. This note summarizes the official documentation; recheck the linked original sources when network access is restored. It is **not** proof that this repository, account, or Android build is eligible.
 
+## Stage 2 verification update — 2026-10-15
+
+Official pages were successfully read with the connected web tool. The cloud
+shell still receives a proxy CONNECT 403 for `developers.openai.com`; this is
+network policy, not an authentication rejection. `git pull --ff-only origin main`
+succeeded with executor network access enabled.
+
+The [official quickstart](https://developers.openai.com/siwc/quickstart) explicitly
+limits plan usage to open-source partners and selected private clients. GitHub
+metadata confirms this repository is private. No approval establishing that this
+app is a selected private client is available. This is **unverified eligibility**,
+not evidence that all private repositories are prohibited. A Plus subscription
+alone does not establish app eligibility; leave live integration disabled.
+
+The [request-client-ID page](https://developers.openai.com/siwc/request-client-id)
+links to the [interest form](https://openai.com/form/sign-in-with-chatgpt-interest/)
+for partner access. The form is aimed at commercial partners; acceptance of a
+private personal app is not documented. Ask OpenAI whether this app qualifies
+while remaining private and whether usage can be restricted to the existing Plus
+allowance, with no purchased credits or other paid fallback. Do not submit
+personal details or change repository visibility automatically.
+
+The [session documentation](https://developers.openai.com/siwc/token-sharing-open-source/profiles-and-sessions)
+states that Plus plan usage is shared across participating apps within a
+five-hour limit. No separate per-app allowance should be assumed.
+
+See [Stage 2 status](stage2-status.md) for delivered scope, testing, and the
+remaining gates. No OAuth registration or inference request was attempted.
+
 ## Official primary sources
 - Overview: https://developers.openai.com/siwc/token-sharing-open-source
 - Registration and sign-in: https://developers.openai.com/siwc/token-sharing-open-source/sign-in
