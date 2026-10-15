@@ -5,7 +5,7 @@ Future<void> loadTestFonts() async {
   if (_loaded) {
     return;
   }
-  for (final name in ['Manrope', 'Newsreader', 'JetBrainsMono']) {
+  for (final name in ['Manrope', 'Newsreader', 'JetBrainsMono', 'SpaceGrotesk']) {
     final loader = FontLoader(name)
       ..addFont(rootBundle.load('assets/fonts/$name.ttf'));
     await loader.load();

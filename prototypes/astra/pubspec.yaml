@@ -16,6 +16,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk.ttf
     - family: Manrope
       fonts:
         - asset: assets/fonts/Manrope.ttf
