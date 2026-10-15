@@ -372,7 +372,9 @@ class ExecutionModel extends ChangeNotifier {
       active!.lastTouched = DateTime.now();
     }
     selectedId = task.id;
-    if (!task.finished) { activeId = task.id; }
+    if (!task.finished) {
+      activeId = task.id;
+    }
     task.visited = true;
     task.lastTouched = DateTime.now();
     page = AppPage.focus;
@@ -415,9 +417,17 @@ class ExecutionModel extends ChangeNotifier {
     selected.awaitingVerification = false;
     changed();
   }
-  void undoAction(String taskId, int milestoneIndex, int actionIndex, String blocker) {
+
+  void undoAction(
+    String taskId,
+    int milestoneIndex,
+    int actionIndex,
+    String blocker,
+  ) {
     final t = tasks.firstWhere((task) => task.id == taskId);
-    if (t.verified != milestoneIndex || t.finished) { return; }
+    if (t.verified != milestoneIndex || t.finished) {
+      return;
+    }
     t.actionIndex = actionIndex;
     t.awaitingVerification = false;
     t.blocker = blocker;
@@ -432,7 +442,7 @@ class ExecutionModel extends ChangeNotifier {
     if (selected.chat.isEmpty) {
       selected.chat.add(
         ChatLine(
-          selected.id == 'indicator'
+          selected.id == 'indicator' && selected.verified == 2 && selected.actionIndex == 0
               ? 'Let’s find the compiler’s first clue. Open the Errors tab at the bottom of MetaEditor.'
               : 'Start here: ${selected.nextAction}',
         ),

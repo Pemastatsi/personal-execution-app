@@ -410,12 +410,26 @@ class FocusScreen extends StatelessWidget {
                   'Action completed',
                   key: const Key('complete-action'),
                   onPressed: () {
-                    final taskId = t.id, milestone = t.verified, index = t.actionIndex, blocker = t.blocker;
+                    final taskId = t.id,
+                        milestone = t.verified,
+                        index = t.actionIndex,
+                        blocker = t.blocker;
                     model.completeAction();
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: const Text('Action saved.'),
-                      action: SnackBarAction(label: 'Undo', onPressed: () => model.undoAction(taskId, milestone, index, blocker))));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Action saved.'),
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () => model.undoAction(
+                            taskId,
+                            milestone,
+                            index,
+                            blocker,
+                          ),
+                        ),
+                      ),
+                    );
                   },
                   icon: Icons.check_rounded,
                 ),

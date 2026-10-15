@@ -99,7 +99,7 @@ class _CoachScreenState extends State<CoachScreen> {
             child: const Eyebrow('Demo'),
           ),
         ),
-        if (MediaQuery.viewInsetsOf(context).bottom == 0)
+        if (View.of(context).viewInsets.bottom == 0)
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
             child: Column(
@@ -214,7 +214,7 @@ class _CoachScreenState extends State<CoachScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: OutlinedButton(
-                    onPressed: () => send('I can’t find the Toolbox.'),
+                    onPressed: () => send(t.id == 'indicator' ? 'I can’t find the Toolbox.' : 'Make this step smaller.'),
                     child: Text(
                       t.id == 'indicator'
                           ? 'I can’t find the Toolbox'
@@ -229,7 +229,7 @@ class _CoachScreenState extends State<CoachScreen> {
           padding: const EdgeInsets.fromLTRB(24, 6, 24, 12),
           child: Column(
             children: [
-              SizedBox(
+              if (t.id == 'indicator' && View.of(context).viewInsets.bottom == 0) SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   key: const Key('attach-screenshot'),
@@ -264,7 +264,10 @@ class _CoachScreenState extends State<CoachScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    style: IconButton.styleFrom(backgroundColor: c.accent, foregroundColor: c.onAccent),
+                    style: IconButton.styleFrom(
+                      backgroundColor: c.accent,
+                      foregroundColor: c.onAccent,
+                    ),
                     tooltip: 'Send message',
                     onPressed: () => send(input.text),
                     icon: const Icon(Icons.arrow_upward_rounded),

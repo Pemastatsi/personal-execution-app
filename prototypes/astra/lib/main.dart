@@ -63,11 +63,24 @@ class AstraApp extends StatelessWidget {
   );
 }
 
-class AstraShell extends StatelessWidget {
+class AstraShell extends StatefulWidget {
   final ExecutionModel model;
   const AstraShell({super.key, required this.model});
   @override
+  State<AstraShell> createState() => _AstraShellState();
+}
+
+class _AstraShellState extends State<AstraShell> {
+  AppPage? _lastPage;
+  ExecutionModel get model => widget.model;
+  @override
   Widget build(BuildContext context) {
+    if (_lastPage != null && _lastPage != model.page) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { ScaffoldMessenger.of(context).clearSnackBars(); }
+      });
+    }
+    _lastPage = model.page;
     final c = AstraColors.of(context);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: model.dark

@@ -21,13 +21,14 @@ void main() {
   testWidgets('core controls have Android touch targets and accessible labels', (tester) async {
     final model = await launch(tester);
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    for (final page in AppPage.values) {
-      if (page == AppPage.coach) { model.openCoach(); } else { model.go(page); }
-      await tester.pumpAndSettle();
-      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    }
+    try {
+      for (final page in AppPage.values) {
+        if (page == AppPage.coach) { model.openCoach(); } else { model.go(page); }
+        await tester.pumpAndSettle();
+        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      }
+    } finally { semantics.dispose(); }
   });
   testWidgets('coach remains usable with the Android keyboard and large text', (tester) async {
     final model = await launch(tester);

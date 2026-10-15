@@ -4,6 +4,8 @@ A Flutter Android prototype based on the full [competition brief](../../docs/ui-
 
 Astra puts the next physical action ahead of the plan. Warm paper, quiet violet, editorial Newsreader headings and legible Manrope instructions create a calm, recognisable identity. A five-segment outcome path communicates earned progress. There are no timers, streaks, points, or generated priorities.
 
+See the [five-screen light/dark gallery](screenshots/README.md) and [implementation PR](https://github.com/Pemastatsi/personal-execution-app/pull/2).
+
 ## Try the experience
 
 1. Open Home and tap **Resume focus**. The editor instruction is already selected.
