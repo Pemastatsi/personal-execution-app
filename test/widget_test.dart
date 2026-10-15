@@ -15,9 +15,11 @@ void main() {
     );
     await tester.scrollUntilVisible(find.byKey(const Key('local-draft')), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('local-draft')), 'A local draft');
     await tester.scrollUntilVisible(find.text('Send'), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     expect(
       tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Send')).onPressed,
       isNull,
@@ -30,6 +32,7 @@ void main() {
     );
     await tester.scrollUntilVisible(find.textContaining('No models have been requested.'), -200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     expect(find.textContaining('No models have been requested.'), findsOneWidget);
   });
 
@@ -37,9 +40,11 @@ void main() {
     await tester.pumpWidget(const PersonalExecutionApp());
     await tester.scrollUntilVisible(find.byKey(const Key('local-draft')), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('local-draft')), 'A local draft');
     await tester.scrollUntilVisible(find.text('Clear draft'), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Clear draft'));
     await tester.pump();
     expect(find.text('A local draft'), findsNothing);
@@ -62,9 +67,16 @@ void main() {
     await tester.pumpWidget(const PersonalExecutionApp());
     await tester.scrollUntilVisible(find.byKey(const Key('local-draft')), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('local-draft')), 'Private draft');
     await tester.scrollUntilVisible(find.text('Copy official ChatGPT address'), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await Scrollable.ensureVisible(
+      tester.element(find.text('Copy official ChatGPT address')), alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Copy official ChatGPT address').hitTestable(), findsOneWidget);
     await tester.tap(find.text('Copy official ChatGPT address'));
     await tester.pumpAndSettle();
     final clipboardCall = calls.singleWhere((call) => call.method == 'Clipboard.setData');
@@ -90,6 +102,12 @@ void main() {
     await tester.pumpWidget(const PersonalExecutionApp());
     await tester.scrollUntilVisible(find.text('Copy official ChatGPT address'), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await Scrollable.ensureVisible(
+      tester.element(find.text('Copy official ChatGPT address')), alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Copy official ChatGPT address').hitTestable(), findsOneWidget);
     await tester.tap(find.text('Copy official ChatGPT address'));
     await tester.pumpAndSettle();
     expect(find.text('Open https://chatgpt.com/ in your browser.'), findsOneWidget);
@@ -105,6 +123,7 @@ void main() {
     await tester.pumpWidget(const PersonalExecutionApp());
     await tester.scrollUntilVisible(find.text('Copy official ChatGPT address'), 200,
       scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('Copy official ChatGPT address').hitTestable(), findsOneWidget);
