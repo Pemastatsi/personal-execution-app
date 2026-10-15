@@ -8,11 +8,20 @@ import 'storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final store = !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-      ? await SqliteStore.open() : MemoryStore();
-  final model = ExecutionModel(store);
-  try { await model.restore(); } catch (_) { model.saveFailed = true; }
-  runApp(AstraApp(model:model));
+  try {
+    final store = !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+        ? await SqliteStore.open() : MemoryStore();
+    final model = ExecutionModel(store);
+    await model.restore();
+    runApp(AstraApp(model:model));
+  } catch (_) {
+    runApp(MaterialApp(theme:astraTheme(false),home:Scaffold(body:SafeArea(child:Padding(
+      padding:const EdgeInsets.all(28),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+        const Text('Your saved place couldn’t be opened.',style:TextStyle(fontSize:26)),
+        const SizedBox(height:16),const Text('Your saved data has not been replaced. Try opening it again.'),
+        const SizedBox(height:24),PrimaryButton('Try again',onPressed:main),
+      ]))))));
+  }
 }
 
 class AstraApp extends StatelessWidget {

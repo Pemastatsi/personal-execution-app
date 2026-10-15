@@ -20,21 +20,21 @@ class _CoachScreenState extends State<CoachScreen> {
       duration:MediaQuery.disableAnimationsOf(context)?Duration.zero:const Duration(milliseconds:220),curve:Curves.easeOut);}});
   }
   Future<void> attach() async {
-    await showModalBottomSheet<void>(context:context,isScrollControlled:true,builder:(ctx)=>SafeArea(child:Padding(
+    await showModalBottomSheet<void>(context:context,isScrollControlled:true,builder:(ctx)=>SafeArea(child:SingleChildScrollView(child:Padding(
       padding:const EdgeInsets.fromLTRB(24,0,24,28),child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.start,children:[
         Text('Show me where you’re stuck.',style:Theme.of(ctx).textTheme.headlineMedium),const SizedBox(height:10),
         const Text('Try this sample screenshot. Nothing is uploaded or sent anywhere.'),const SizedBox(height:20),
         const EditorScreenshot(),const SizedBox(height:20),PrimaryButton('Use sample screenshot',key:const Key('use-screenshot'),onPressed:(){
           Navigator.pop(ctx);send('Here’s the error I’m seeing.',screenshot:true);
         },icon:Icons.image_outlined),
-      ]))));
+      ])))));
   }
   @override Widget build(BuildContext context) {
     final model=widget.model,t=model.selected,c=AstraColors.of(context),text=Theme.of(context).textTheme;
     return Column(children:[
       ScreenHeader(title:'Execution coach',onBack:()=>model.go(AppPage.focus),trailing:Container(padding:const EdgeInsets.symmetric(horizontal:9,vertical:5),
         decoration:BoxDecoration(border:Border.all(color:c.line),borderRadius:BorderRadius.circular(8)),child:const Eyebrow('Demo'))),
-      Padding(padding:const EdgeInsets.fromLTRB(24,4,24,0),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+      if(MediaQuery.viewInsetsOf(context).bottom==0) Padding(padding:const EdgeInsets.fromLTRB(24,4,24,0),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         Row(children:[const StarMark(size:20),const SizedBox(width:9),Expanded(child:Text('A way through, one step at a time.',style:text.bodyMedium))]),
         const SizedBox(height:18),Surface(color:c.wash,padding:const EdgeInsets.all(15),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Icon(Icons.my_location_outlined,size:19,color:c.accent),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[

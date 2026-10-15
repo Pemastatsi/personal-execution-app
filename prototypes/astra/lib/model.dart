@@ -99,7 +99,7 @@ class WorkTask {
     final completed = history.where((entry) => entry.startsWith('Completed:'));
     if (finished) { return 'All ${milestones.length} outcomes are verified. ${milestone.evidence}'; }
     if (completed.isEmpty) { return context; }
-    return '${verified} of ${milestones.length} outcomes are verified. Last action: ${completed.last.substring(11)}';
+    return '$verified of ${milestones.length} outcomes are verified. Last action: ${completed.last.substring(11)}';
   }
   String instruction() => switch (detail) { Detail.micro => action.micro, Detail.normal => action.detail, Detail.overview => action.overview };
   Map<String, dynamic> toJson() => {'id': id, 'title': title, 'category': category, 'context': context,

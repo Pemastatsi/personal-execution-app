@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
       const SizedBox(height:16),InkWell(key:const Key('capture-task'),borderRadius:BorderRadius.circular(18),
         onTap:()=>captureTask(context,model),child:Container(padding:const EdgeInsets.symmetric(horizontal:16,vertical:17),
           decoration:BoxDecoration(border:Border.all(color:c.line),borderRadius:BorderRadius.circular(18)),
-          child:Row(children:[Icon(Icons.add_rounded,color:c.accent),const SizedBox(width:12),Text('Get a task out of your head',style:text.bodyMedium)]))),
+          child:Row(children:[Icon(Icons.add_rounded,color:c.accent),const SizedBox(width:12),Expanded(child:Text('Get a task out of your head',style:text.bodyMedium))]))),
     ]);
   }
 }
@@ -89,7 +89,7 @@ class FocusScreen extends StatelessWidget {
         Text(t.title,style:text.bodyMedium),const SizedBox(height:16),
         ViewTabs(selected:0,onChange:(i){if(i>0) {model.openRoadmap(milestone:i==1);}}),
         const SizedBox(height:24),Row(children:[Icon(Icons.verified_outlined,color:c.green,size:16),const SizedBox(width:7),
-          Text('${t.verified} of ${t.milestones.length} outcomes verified',style:text.bodyMedium?.copyWith(color:c.green,fontSize:12))]),
+          Flexible(child:Text('${t.verified} of ${t.milestones.length} outcomes verified',style:text.bodyMedium?.copyWith(color:c.green,fontSize:12)))]),
         const SizedBox(height:10),Text(t.milestone.title,style:text.titleMedium),const SizedBox(height:18),const Divider(),
         const SizedBox(height:27),
         if(t.finished) ...[
@@ -100,7 +100,7 @@ class FocusScreen extends StatelessWidget {
           const SizedBox(height:20),Surface(color:c.greenWash,child:Text(t.milestone.evidence,style:text.titleMedium)),
           const SizedBox(height:16),const Text('Only you can confirm this outcome. Finishing instructions alone doesn’t verify it.'),
         ] else ...[
-          Row(children:[Eyebrow('Just this next action',color:c.accent),const Spacer(),StarMark(size:18,color:c.accent)]),
+          Row(children:[Expanded(child:Eyebrow('Just this next action',color:c.accent)),const SizedBox(width:8),StarMark(size:18,color:c.accent)]),
           const SizedBox(height:16),AnimatedSwitcher(duration:MediaQuery.disableAnimationsOf(context)?Duration.zero:const Duration(milliseconds:160),
             child:Align(key:ValueKey(t.nextAction),alignment:Alignment.centerLeft,child:Text(t.nextAction,style:text.headlineLarge))),
           const SizedBox(height:20),Text(t.instruction(),style:text.bodyLarge?.copyWith(color:c.muted)),
@@ -171,7 +171,7 @@ class RoadmapScreen extends StatelessWidget {
         const SizedBox(height:4),Text(done?'Verified by you':current?'Current milestone':'Ahead',style:text.bodyMedium?.copyWith(fontSize:12,color:done?c.green:c.muted)),
         if(done) InkWell(onTap:()=>showModalBottomSheet<void>(context:context,builder:(ctx)=>Padding(padding:const EdgeInsets.fromLTRB(24,0,24,32),
           child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.start,children:[Eyebrow('Verified outcome',color:c.green),const SizedBox(height:12),Text(t.milestones[i].evidence,style:text.titleLarge)]))),
-          child:const Padding(padding:EdgeInsets.symmetric(vertical:12),child:Text('View evidence',style:TextStyle(fontSize:12,decoration:TextDecoration.underline)))),
+          child:const Padding(padding:EdgeInsets.symmetric(vertical:15),child:Text('View evidence',style:TextStyle(fontSize:12,decoration:TextDecoration.underline)))),
       ]))),
     ]));
   }
@@ -189,7 +189,7 @@ class RecoveryScreen extends StatelessWidget {
         const SizedBox(height:12),Text('Change direction without starting over.',style:text.bodyMedium),const SizedBox(height:24),
         Surface(color:c.wash,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
           Row(children:[Icon(Icons.history_rounded,color:c.accent,size:18),const SizedBox(width:8),
-            Eyebrow(away>=14?'After two weeks away':t.visited?'Your saved place':'Ready when you are',color:c.accent)]),
+            Expanded(child:Eyebrow(away>=14?'After two weeks away':t.visited?'Your saved place':'Ready when you are',color:c.accent))]),
           const SizedBox(height:14),Text(t.title,style:text.titleLarge),const SizedBox(height:12),
           Text(t.resumeContext,style:text.bodyMedium),
           if(t.blocker.isNotEmpty) ...[const SizedBox(height:12),Text('Last blocker: ${t.blocker}',style:text.bodyMedium?.copyWith(color:c.ink))],
