@@ -638,7 +638,7 @@ class ConceptScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+            )), 
           ],
         ),
         gap(12),
