@@ -1,0 +1,56 @@
+name: Astra concept · APK and visual QA
+
+on:
+  push:
+    branches: [design/astra-concept]
+    paths: ['prototypes/astra/**', '.github/workflows/astra-concept.yml']
+  pull_request:
+    paths: ['prototypes/astra/**', '.github/workflows/astra-concept.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: astra-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/astra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format lib test
+      - run: flutter analyze
+      - run: flutter test --reporter expanded
+      - name: Render actual Flutter screens at 390 × 844
+        run: flutter test test/render_test.dart --dart-define=EXPORT_SCREENSHOTS=true --reporter expanded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: astra-visual-qa
+          path: |
+            prototypes/astra/screenshots/*.png
+            prototypes/astra/pubspec.lock
+            prototypes/astra/lib/
+            prototypes/astra/test/
+          retention-days: 30
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-android-debug
+          path: prototypes/astra/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
