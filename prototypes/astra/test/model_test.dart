@@ -58,6 +58,8 @@ void main() {
   });
   test('two-week checkpoint is retained until the user resumes', () {
     final model = ExecutionModel(MemoryStore());
+    model.resume(model.tasks[1]);
+    model.preview(model.tasks[0]);
     model.preview(model.selected);
     expect(DateTime.now().difference(model.selected.lastTouched).inDays, 14);
     model.resume(model.selected);

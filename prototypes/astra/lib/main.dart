@@ -77,7 +77,9 @@ class _AstraShellState extends State<AstraShell> {
   Widget build(BuildContext context) {
     if (_lastPage != null && _lastPage != model.page) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) { ScaffoldMessenger.of(context).clearSnackBars(); }
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+        }
       });
     }
     _lastPage = model.page;

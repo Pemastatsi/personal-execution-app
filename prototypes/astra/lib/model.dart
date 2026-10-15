@@ -368,9 +368,6 @@ class ExecutionModel extends ChangeNotifier {
   }
 
   void resume(WorkTask task) {
-    if (active != null && activeId != task.id) {
-      active!.lastTouched = DateTime.now();
-    }
     selectedId = task.id;
     if (!task.finished) {
       activeId = task.id;
@@ -442,7 +439,9 @@ class ExecutionModel extends ChangeNotifier {
     if (selected.chat.isEmpty) {
       selected.chat.add(
         ChatLine(
-          selected.id == 'indicator' && selected.verified == 2 && selected.actionIndex == 0
+          selected.id == 'indicator' &&
+                  selected.verified == 2 &&
+                  selected.actionIndex == 0
               ? 'Let’s find the compiler’s first clue. Open the Errors tab at the bottom of MetaEditor.'
               : 'Start here: ${selected.nextAction}',
         ),

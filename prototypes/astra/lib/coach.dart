@@ -214,7 +214,11 @@ class _CoachScreenState extends State<CoachScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: OutlinedButton(
-                    onPressed: () => send(t.id == 'indicator' ? 'I can’t find the Toolbox.' : 'Make this step smaller.'),
+                    onPressed: () => send(
+                      t.id == 'indicator'
+                          ? 'I can’t find the Toolbox.'
+                          : 'Make this step smaller.',
+                    ),
                     child: Text(
                       t.id == 'indicator'
                           ? 'I can’t find the Toolbox'
@@ -229,18 +233,20 @@ class _CoachScreenState extends State<CoachScreen> {
           padding: const EdgeInsets.fromLTRB(24, 6, 24, 12),
           child: Column(
             children: [
-              if (t.id == 'indicator' && View.of(context).viewInsets.bottom == 0) SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  key: const Key('attach-screenshot'),
-                  onPressed: attach,
-                  icon: const Icon(
-                    Icons.add_photo_alternate_outlined,
-                    size: 20,
+              if (t.id == 'indicator' &&
+                  View.of(context).viewInsets.bottom == 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const Key('attach-screenshot'),
+                    onPressed: attach,
+                    icon: const Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 20,
+                    ),
+                    label: const Text('Attach a screenshot'),
                   ),
-                  label: const Text('Attach a screenshot'),
                 ),
-              ),
               const SizedBox(height: 9),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,

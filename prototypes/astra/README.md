@@ -4,7 +4,7 @@ A Flutter Android prototype based on the full [competition brief](../../docs/ui-
 
 Astra puts the next physical action ahead of the plan. Warm paper, quiet violet, editorial Newsreader headings and legible Manrope instructions create a calm, recognisable identity. A five-segment outcome path communicates earned progress. There are no timers, streaks, points, or generated priorities.
 
-See the [five-screen light/dark gallery](screenshots/README.md) and [implementation PR](https://github.com/Pemastatsi/personal-execution-app/pull/2).
+See the [five-screen light/dark gallery](screenshots/README.md), [visual QA notes](VISUAL_QA.md), and [implementation PR](https://github.com/Pemastatsi/personal-execution-app/pull/2).
 
 ## Try the experience
 

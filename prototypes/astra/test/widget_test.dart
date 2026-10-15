@@ -18,19 +18,30 @@ Future<ExecutionModel> launch(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('core controls have Android touch targets and accessible labels', (tester) async {
-    final model = await launch(tester);
-    final semantics = tester.ensureSemantics();
-    try {
-      for (final page in AppPage.values) {
-        if (page == AppPage.coach) { model.openCoach(); } else { model.go(page); }
-        await tester.pumpAndSettle();
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+  testWidgets(
+    'core controls have Android touch targets and accessible labels',
+    (tester) async {
+      final model = await launch(tester);
+      final semantics = tester.ensureSemantics();
+      try {
+        for (final page in AppPage.values) {
+          if (page == AppPage.coach) {
+            model.openCoach();
+          } else {
+            model.go(page);
+          }
+          await tester.pumpAndSettle();
+          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+        }
+      } finally {
+        semantics.dispose();
       }
-    } finally { semantics.dispose(); }
-  });
-  testWidgets('coach remains usable with the Android keyboard and large text', (tester) async {
+    },
+  );
+  testWidgets('coach remains usable with the Android keyboard and large text', (
+    tester,
+  ) async {
     final model = await launch(tester);
     model.openCoach();
     tester.platformDispatcher.textScaleFactorTestValue = 2;
@@ -39,13 +50,18 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    await tester.enterText(find.byKey(const Key('coach-input')), 'Where is the Toolbox?');
+    await tester.enterText(
+      find.byKey(const Key('coach-input')),
+      'Where is the Toolbox?',
+    );
     await tester.tap(find.byTooltip('Send message'));
     await tester.pumpAndSettle();
     expect(model.selected.chat.last.text, contains('View → Toolbox'));
     expect(tester.takeException(), isNull);
   });
-  testWidgets('accidental completion can be undone without changing progress', (tester) async {
+  testWidgets('accidental completion can be undone without changing progress', (
+    tester,
+  ) async {
     final model = await launch(tester);
     model.resume(model.selected);
     await tester.pumpAndSettle();
