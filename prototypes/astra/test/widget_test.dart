@@ -71,7 +71,7 @@ void main(){
           // MaterialApp uses the view's accessibility text scale.
           tester.platformDispatcher.textScaleFactorTestValue=scale;
           addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-          model.notifyListeners();await tester.pumpAndSettle();
+          model.go(page);await tester.pumpAndSettle();
           expect(tester.takeException(),isNull,reason:'$page, scale $scale, dark $dark');
         }
       });

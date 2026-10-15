@@ -95,6 +95,12 @@ class WorkTask {
   }
   ActionStep get action => steps[actionIndex.clamp(0, steps.length - 1)];
   String get nextAction => finished ? 'This task is complete.' : awaitingVerification ? 'Verify: ${milestone.title.toLowerCase()}.' : action.title;
+  String get resumeContext {
+    final completed = history.where((entry) => entry.startsWith('Completed:'));
+    if (finished) { return 'All ${milestones.length} outcomes are verified. ${milestone.evidence}'; }
+    if (completed.isEmpty) { return context; }
+    return '${verified} of ${milestones.length} outcomes are verified. Last action: ${completed.last.substring(11)}';
+  }
   String instruction() => switch (detail) { Detail.micro => action.micro, Detail.normal => action.detail, Detail.overview => action.overview };
   Map<String, dynamic> toJson() => {'id': id, 'title': title, 'category': category, 'context': context,
     'milestones': milestones.map((m) => {'title': m.title, 'evidence': m.evidence}).toList(),

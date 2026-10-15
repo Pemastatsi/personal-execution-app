@@ -11,7 +11,7 @@ class ScreenHeader extends StatelessWidget {
   @override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.fromLTRB(12,8,16,8),
     child:Row(children:[IconButton(tooltip:'Back',onPressed:onBack,icon:const Icon(Icons.arrow_back_rounded,size:22)),
       const SizedBox(width:4),Expanded(child:Text(title,style:Theme.of(context).textTheme.titleMedium)),
-      if(trailing!=null) trailing!]));
+      ?trailing]));
 }
 
 class HomeScreen extends StatelessWidget {
@@ -191,7 +191,7 @@ class RecoveryScreen extends StatelessWidget {
           Row(children:[Icon(Icons.history_rounded,color:c.accent,size:18),const SizedBox(width:8),
             Eyebrow(away>=14?'After two weeks away':t.visited?'Your saved place':'Ready when you are',color:c.accent)]),
           const SizedBox(height:14),Text(t.title,style:text.titleLarge),const SizedBox(height:12),
-          Text(t.context,style:text.bodyMedium),
+          Text(t.resumeContext,style:text.bodyMedium),
           if(t.blocker.isNotEmpty) ...[const SizedBox(height:12),Text('Last blocker: ${t.blocker}',style:text.bodyMedium?.copyWith(color:c.ink))],
           const SizedBox(height:18),Divider(color:c.accent.withValues(alpha:.2)),const SizedBox(height:16),
           const Eyebrow('Pick up right here'),const SizedBox(height:8),Text(t.nextAction,style:text.titleMedium),
