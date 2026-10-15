@@ -20,100 +20,155 @@ void main() {
 
   for (final direction in VisualDirection.values) {
     for (final dark in [false, true]) {
-      testWidgets('${direction.name} $dark: flows, semantics and scalable content', (tester) async {
-        await setup(tester);
-        final model = ExecutionModel(MemoryStore())..page = AppPage.focus..dark = dark;
-        await tester.pumpWidget(AstraApp(model: model, direction: direction));
-        await tester.pumpAndSettle();
-        expect(find.text('Open the editor and locate the error list.'), findsOneWidget);
-        final semantics = tester.ensureSemantics();
-        try {
-          expect(tester.takeException(), isNull);
-          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-        } finally { semantics.dispose(); }
-        await tester.ensureVisible(find.byKey(const Key('instruction-detail')));
-        await tester.tap(find.byKey(const Key('instruction-detail')));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Micro'));
-        await tester.pumpAndSettle();
-        expect(model.selected.detail, Detail.micro);
-        await tester.tap(find.byKey(const Key('complete-action')));
-        await tester.pumpAndSettle();
-        expect(model.selected.actionIndex, 1);
-        expect(model.selected.verified, 2);
-        await tester.tap(find.text('Undo'));
-        await tester.pumpAndSettle();
-        expect(model.selected.actionIndex, 0);
-        await tester.ensureVisible(find.byKey(const Key('concept-tab-2')));
-        await tester.tap(find.byKey(const Key('concept-tab-2')));
-        await tester.pumpAndSettle();
-        expect(model.page, AppPage.roadmap);
-        await tester.tap(find.text('Define the signal rules'));
-        await tester.pumpAndSettle();
-        expect(find.text('Entry and exit rules saved in the project notes.'), findsOneWidget);
-        Navigator.of(tester.element(find.text('Verified outcome'))).pop();
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const Key('concept-tab-1')));
-        await tester.pumpAndSettle();
-        expect(find.text('What done looks like'.toUpperCase()), findsOneWidget);
-        await tester.tap(find.byKey(const Key('back-to-action')));
-        await tester.pumpAndSettle();
-        for (var i = 0; i < 4; i++) {
+      testWidgets(
+        '${direction.name} $dark: flows, semantics and scalable content',
+        (tester) async {
+          await setup(tester);
+          final model = ExecutionModel(MemoryStore())
+            ..page = AppPage.focus
+            ..dark = dark;
+          await tester.pumpWidget(AstraApp(model: model, direction: direction));
+          await tester.pumpAndSettle();
+          expect(
+            find.text('Open the editor and locate the error list.'),
+            findsOneWidget,
+          );
+          final semantics = tester.ensureSemantics();
+          try {
+            expect(tester.takeException(), isNull);
+            await expectLater(
+              tester,
+              meetsGuideline(androidTapTargetGuideline),
+            );
+            await expectLater(
+              tester,
+              meetsGuideline(labeledTapTargetGuideline),
+            );
+          } finally {
+            semantics.dispose();
+          }
+          await tester.ensureVisible(
+            find.byKey(const Key('instruction-detail')),
+          );
+          await tester.tap(find.byKey(const Key('instruction-detail')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Micro'));
+          await tester.pumpAndSettle();
+          expect(model.selected.detail, Detail.micro);
           await tester.tap(find.byKey(const Key('complete-action')));
           await tester.pumpAndSettle();
-        }
-        expect(model.selected.verified, 2);
-        expect(model.selected.awaitingVerification, isTrue);
-        await tester.tap(find.byKey(const Key('verify-outcome')));
-        await tester.pumpAndSettle();
-        expect(model.selected.verified, 3);
-        await tester.tap(find.byKey(const Key('concept-theme')));
-        await tester.pumpAndSettle();
-        expect(model.dark, !dark);
-        await tester.tap(find.byKey(const Key('ask-ai')));
-        await tester.pumpAndSettle();
-        expect(model.page, AppPage.coach);
-        model.go(AppPage.focus);
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const Key('switch-task')));
-        await tester.pumpAndSettle();
-        expect(model.page, AppPage.recovery);
-        final original = model.selected;
-        model.resume(model.tasks[1]);
-        model.resume(original);
-        expect(model.selected.verified, 3);
-        for (final page in [AppPage.focus, AppPage.roadmap]) {
-          model.go(page);
-          await tester.pumpWidget(MediaQuery(data: const MediaQueryData(textScaler: TextScaler.linear(2)), child: AstraApp(model: model, direction: direction)));
-          // MaterialApp obtains platform scaling, so set it at the dispatcher too.
-          tester.platformDispatcher.textScaleFactorTestValue = 2;
-          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          expect(model.selected.actionIndex, 1);
+          expect(model.selected.verified, 2);
+          await tester.tap(find.text('Undo'));
           await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-          expect(find.byKey(Key(page == AppPage.focus ? 'complete-action' : 'back-to-action')), findsOneWidget);
-        }
-      });
+          expect(model.selected.actionIndex, 0);
+          await tester.ensureVisible(find.byKey(const Key('concept-tab-2')));
+          await tester.tap(find.byKey(const Key('concept-tab-2')));
+          await tester.pumpAndSettle();
+          expect(model.page, AppPage.roadmap);
+          await tester.tap(find.text('Define the signal rules'));
+          await tester.pumpAndSettle();
+          expect(
+            find.text('Entry and exit rules saved in the project notes.'),
+            findsOneWidget,
+          );
+          Navigator.of(tester.element(find.text('VERIFIED OUTCOME'))).pop();
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('concept-tab-1')));
+          await tester.pumpAndSettle();
+          expect(
+            find.text('What done looks like'.toUpperCase()),
+            findsOneWidget,
+          );
+          await tester.tap(find.byKey(const Key('back-to-action')));
+          await tester.pumpAndSettle();
+          for (var i = 0; i < 4; i++) {
+            await tester.tap(find.byKey(const Key('complete-action')));
+            await tester.pumpAndSettle();
+          }
+          expect(model.selected.verified, 2);
+          expect(model.selected.awaitingVerification, isTrue);
+          await tester.tap(find.byKey(const Key('verify-outcome')));
+          await tester.pumpAndSettle();
+          expect(model.selected.verified, 3);
+          await tester.tap(find.byKey(const Key('concept-theme')));
+          await tester.pumpAndSettle();
+          expect(model.dark, !dark);
+          await tester.tap(find.byKey(const Key('ask-ai')));
+          await tester.pumpAndSettle();
+          expect(model.page, AppPage.coach);
+          model.go(AppPage.focus);
+          await tester.pumpAndSettle();
+          await tester.tap(find.byKey(const Key('switch-task')));
+          await tester.pumpAndSettle();
+          expect(model.page, AppPage.recovery);
+          final original = model.selected;
+          model.resume(model.tasks[1]);
+          model.resume(original);
+          expect(model.selected.verified, 3);
+          for (final page in [AppPage.focus, AppPage.roadmap]) {
+            model.go(page);
+            await tester.pumpWidget(
+              MediaQuery(
+                data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+                child: AstraApp(model: model, direction: direction),
+              ),
+            );
+            // MaterialApp obtains platform scaling, so set it at the dispatcher too.
+            tester.platformDispatcher.textScaleFactorTestValue = 2;
+            addTearDown(
+              tester.platformDispatcher.clearTextScaleFactorTestValue,
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+            expect(
+              find.byKey(
+                Key(
+                  page == AppPage.focus ? 'complete-action' : 'back-to-action',
+                ),
+              ),
+              findsOneWidget,
+            );
+          }
+        },
+      );
     }
   }
 
   testWidgets('export twelve comparable Flutter screens', (tester) async {
-    if (!const bool.fromEnvironment('EXPORT_EXPLORATION')) { return; }
+    if (!const bool.fromEnvironment('EXPORT_EXPLORATION')) {
+      return;
+    }
     await setup(tester);
+    debugDisableShadows = false;
+    addTearDown(() => debugDisableShadows = true);
     for (final direction in VisualDirection.values) {
       for (final dark in [false, true]) {
         for (final page in [AppPage.focus, AppPage.roadmap]) {
-          final model = ExecutionModel(MemoryStore())..dark = dark..page = page;
+          final model = ExecutionModel(MemoryStore())
+            ..dark = dark
+            ..page = page;
           final key = GlobalKey();
-          await tester.pumpWidget(RepaintBoundary(key: key, child: AstraApp(model: model, direction: direction)));
+          await tester.pumpWidget(
+            RepaintBoundary(
+              key: key,
+              child: AstraApp(model: model, direction: direction),
+            ),
+          );
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
           await tester.runAsync(() async {
-            final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+            final boundary =
+                key.currentContext!.findRenderObject()!
+                    as RenderRepaintBoundary;
             final image = await boundary.toImage(pixelRatio: 2);
             final data = await image.toByteData(format: ui.ImageByteFormat.png);
-            await Directory('visual-exploration/screenshots').create(recursive: true);
-            await File('visual-exploration/screenshots/${direction.name}-${page.name}-${dark ? 'dark' : 'light'}.png').writeAsBytes(data!.buffer.asUint8List());
+            await Directory(
+              'visual-exploration/screenshots',
+            ).create(recursive: true);
+            await File(
+              'visual-exploration/screenshots/${direction.name}-${page.name}-${dark ? 'dark' : 'light'}.png',
+            ).writeAsBytes(data!.buffer.asUint8List());
             image.dispose();
           });
         }

@@ -57,8 +57,16 @@ class AstraApp extends StatelessWidget {
     builder: (context, _) => MaterialApp(
       title: 'Astra',
       debugShowCheckedModeBanner: false,
-      theme: direction != null && (model.page == AppPage.focus || model.page == AppPage.roadmap) ? visualTheme(direction!, false) : astraTheme(false),
-      darkTheme: direction != null && (model.page == AppPage.focus || model.page == AppPage.roadmap) ? visualTheme(direction!, true) : astraTheme(true),
+      theme:
+          direction != null &&
+              (model.page == AppPage.focus || model.page == AppPage.roadmap)
+          ? visualTheme(direction!, false)
+          : astraTheme(false),
+      darkTheme:
+          direction != null &&
+              (model.page == AppPage.focus || model.page == AppPage.roadmap)
+          ? visualTheme(direction!, true)
+          : astraTheme(true),
       themeMode: model.dark ? ThemeMode.dark : ThemeMode.light,
       home: AstraShell(model: model, direction: direction),
     ),
@@ -128,9 +136,21 @@ class _AstraShellState extends State<AstraShell> {
                           key: ValueKey(model.page),
                           child: switch (model.page) {
                             AppPage.home => HomeScreen(model: model),
-                            AppPage.focus => widget.direction == null ? FocusScreen(model: model) : ConceptScreen(model: model, direction: widget.direction!),
+                            AppPage.focus =>
+                              widget.direction == null
+                                  ? FocusScreen(model: model)
+                                  : ConceptScreen(
+                                      model: model,
+                                      direction: widget.direction!,
+                                    ),
                             AppPage.coach => CoachScreen(model: model),
-                            AppPage.roadmap => widget.direction == null ? RoadmapScreen(model: model) : ConceptScreen(model: model, direction: widget.direction!),
+                            AppPage.roadmap =>
+                              widget.direction == null
+                                  ? RoadmapScreen(model: model)
+                                  : ConceptScreen(
+                                      model: model,
+                                      direction: widget.direction!,
+                                    ),
                             AppPage.recovery => RecoveryScreen(model: model),
                           },
                         ),
