@@ -37,11 +37,11 @@ class VisualPalette {
   );
   Color get muted => Color(
     dark
-        ? 0xFFB7C5C7
+        ? (c ? 0xFFC6BCAD : 0xFFB7C5C7)
         : a
         ? 0xFF52656B
         : b
-        ? 0xFF526D72
+        ? 0xFF50696D
         : 0xFF71675C,
   );
   Color get accent => Color(
@@ -104,9 +104,8 @@ ThemeData visualTheme(VisualDirection direction, bool dark) {
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        foregroundColor: p.ink,
-        minimumSize: const Size(48, 48),
+      style: base.textButtonTheme.style!.copyWith(
+        foregroundColor: WidgetStatePropertyAll(p.ink),
       ),
     ),
     bottomSheetTheme: BottomSheetThemeData(
@@ -483,36 +482,124 @@ class ConceptScreen extends StatelessWidget {
         Center(child: label(kicker, color: p.accent)),
         gap(18),
         Container(
-          decoration: BoxDecoration(gradient: RadialGradient(radius: .9, colors: [p.accent.withValues(alpha: model.dark ? .07 : .025), Colors.transparent])),
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              radius: .9,
+              colors: [
+                p.accent.withValues(alpha: model.dark ? .07 : .025),
+                Colors.transparent,
+              ],
+            ),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          child: Text(title, textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Manrope', fontSize: 34, height: 1.15, letterSpacing: -1.2, fontWeight: FontWeight.w600, color: p.ink)),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Manrope',
+              fontSize: 34,
+              height: 1.15,
+              letterSpacing: -1.2,
+              fontWeight: FontWeight.w600,
+              color: p.ink,
+            ),
+          ),
         ),
         gap(25),
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: model.dark ? const [Color(0xFF304D58), Color(0xFF223540)] : const [Color(0xFFFFFFFF), Color(0xFFF1F7F2)]),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: model.dark
+                  ? const [Color(0xFF304D58), Color(0xFF223540)]
+                  : const [Color(0xFFFFFFFF), Color(0xFFF1F7F2)],
+            ),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: model.dark ? const Color(0xFF5B747B) : Colors.white),
-            boxShadow: [BoxShadow(color: const Color(0xFF0C2E3B).withValues(alpha: model.dark ? .2 : .08), blurRadius: 30, offset: const Offset(0, 14))],
+            border: Border.all(
+              color: model.dark ? const Color(0xFF5B747B) : Colors.white,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(
+                  0xFF0C2E3B,
+                ).withValues(alpha: model.dark ? .2 : .08),
+                blurRadius: 30,
+                offset: const Offset(0, 14),
+              ),
+            ],
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            body(instruction, size: 16),
-            if (stateNote != null) ...[gap(16), stateNote],
-            if (!t.finished && !t.awaitingVerification) ...[gap(18), _detailControl(context)],
-          ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              body(instruction, size: 16),
+              if (stateNote != null) ...[gap(16), stateNote],
+              if (!t.finished && !t.awaitingVerification) ...[
+                gap(18),
+                _detailControl(context),
+              ],
+            ],
+          ),
         ),
         gap(28),
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Padding(padding: const EdgeInsets.only(top: 2), child: SizedBox(width: 43, height: 43, child: Stack(alignment: Alignment.center, children: [
-            SizedBox.expand(child: CircularProgressIndicator(value: t.verified / t.milestones.length, strokeWidth: 3, color: p.accent, backgroundColor: p.line, strokeCap: StrokeCap.round, semanticsLabel: '${t.verified} of ${t.milestones.length} outcomes verified')),
-            Text('${t.verified}/${t.milestones.length}', style: TextStyle(fontSize: 12, color: p.ink, fontWeight: FontWeight.w600)),
-          ]))),
-          const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            label('Current milestone'), gap(5), body(t.milestone.title, size: 15, color: p.ink, weight: FontWeight.w600), gap(8), body('${t.verified} of ${t.milestones.length} outcomes verified', size: 12),
-          ])),
-        ]),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: SizedBox(
+                width: 43,
+                height: 43,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox.expand(
+                      child: CircularProgressIndicator(
+                        value: t.verified / t.milestones.length,
+                        strokeWidth: 3,
+                        color: p.accent,
+                        backgroundColor: p.line,
+                        strokeCap: StrokeCap.round,
+                        semanticsLabel:
+                            '${t.verified} of ${t.milestones.length} outcomes verified',
+                      ),
+                    ),
+                    Text(
+                      '${t.verified}/${t.milestones.length}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: p.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  label('Current milestone'),
+                  gap(5),
+                  body(
+                    t.milestone.title,
+                    size: 15,
+                    color: p.ink,
+                    weight: FontWeight.w600,
+                  ),
+                  gap(8),
+                  body(
+                    '${t.verified} of ${t.milestones.length} outcomes verified',
+                    size: 12,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ];
     }
     return [
@@ -626,19 +713,21 @@ class ConceptScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  label('Outcomes verified', color: p.accent),
-                  body(
-                    '${t.milestones.length - t.verified} still ahead',
-                    size: 13,
-                  ),
-                ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    label('Outcomes verified', color: p.accent),
+                    body(
+                      '${t.milestones.length - t.verified} still ahead',
+                      size: 13,
+                    ),
+                  ],
+                ),
               ),
-            )), 
+            ),
           ],
         ),
         gap(12),
@@ -646,7 +735,19 @@ class ConceptScreen extends StatelessWidget {
         gap(25),
         label('Your path to done'),
         gap(12),
-        Container(decoration: BoxDecoration(border: Border.all(color: p.line), borderRadius: BorderRadius.circular(10)), clipBehavior: Clip.antiAlias, child: Column(children: List.generate(t.milestones.length, (i) => _precisionRow(context, i)))),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: p.line),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: List.generate(
+              t.milestones.length,
+              (i) => _precisionRow(context, i),
+            ),
+          ),
+        ),
         gap(14),
         body(
           'Future milestones stay high-level. We’ll work out the actions when you get there.',
@@ -711,18 +812,80 @@ class ConceptScreen extends StatelessWidget {
   Widget _precisionRow(BuildContext context, int i) {
     final current = i == t.verified, done = i < t.verified;
     final fg = current ? p.onButton : p.ink;
-    return Material(color: current ? p.button : p.surface, child: InkWell(
-      onTap: () => _inspect(context, i),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
-        decoration: BoxDecoration(border: i == t.milestones.length - 1 ? null : Border(bottom: BorderSide(color: current ? p.button : p.line))),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 32, child: done ? Icon(Icons.check_circle_outline_rounded, color: p.accent, size: 21) : Text('${i + 1}'.padLeft(2, '0'), style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 18, color: fg))), const SizedBox(width: 10),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [body(t.milestones[i].title, size: 15, color: fg, weight: FontWeight.w600), gap(3), Text(done ? 'Verified by you · View evidence' : current ? 'CURRENT MILESTONE' : 'Ahead', style: TextStyle(fontSize: 11, height: 1.5, letterSpacing: current ? .8 : 0, color: current ? fg : p.muted))])),
-          const SizedBox(width: 8), Icon(current ? Icons.arrow_forward_rounded : Icons.chevron_right_rounded, size: 19, color: current ? fg : p.muted),
-        ]),
+    return Material(
+      color: current ? p.button : p.surface,
+      child: InkWell(
+        onTap: () => _inspect(context, i),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+          decoration: BoxDecoration(
+            border: i == t.milestones.length - 1
+                ? null
+                : Border(
+                    bottom: BorderSide(color: current ? p.button : p.line),
+                  ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 32,
+                child: done
+                    ? Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: p.accent,
+                        size: 21,
+                      )
+                    : Text(
+                        '${i + 1}'.padLeft(2, '0'),
+                        style: TextStyle(
+                          fontFamily: 'SpaceGrotesk',
+                          fontSize: 18,
+                          color: fg,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    body(
+                      t.milestones[i].title,
+                      size: 15,
+                      color: fg,
+                      weight: FontWeight.w600,
+                    ),
+                    gap(3),
+                    Text(
+                      done
+                          ? 'Verified by you · View evidence'
+                          : current
+                          ? 'CURRENT MILESTONE'
+                          : 'Ahead',
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.5,
+                        letterSpacing: current ? .8 : 0,
+                        color: current ? fg : p.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                current
+                    ? Icons.arrow_forward_rounded
+                    : Icons.chevron_right_rounded,
+                size: 19,
+                color: current ? fg : p.muted,
+              ),
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 
   Widget _journey() => Semantics(

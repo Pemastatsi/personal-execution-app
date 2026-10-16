@@ -135,13 +135,32 @@ void main() {
     }
   }
 
+  testWidgets('all initial concepts remain usable at 200 percent text', (tester) async {
+    await setup(tester);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    for (final direction in VisualDirection.values) {
+      for (final dark in [false, true]) {
+        for (final page in [AppPage.focus, AppPage.roadmap]) {
+          final model = ExecutionModel(MemoryStore())..page = page..dark = dark;
+          await tester.pumpWidget(AstraApp(key: ValueKey('$direction-$dark-$page'), model: model, direction: direction));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          final button = find.byKey(Key(page == AppPage.focus ? 'complete-action' : 'back-to-action'));
+          expect(button.hitTestable(), findsOneWidget);
+        }
+      }
+    }
+  });
+
   testWidgets('export twelve comparable Flutter screens', (tester) async {
     if (!const bool.fromEnvironment('EXPORT_EXPLORATION')) {
       return;
     }
     await setup(tester);
+    final originalShadows = debugDisableShadows;
     debugDisableShadows = false;
-    addTearDown(() => debugDisableShadows = true);
+    try {
     for (final direction in VisualDirection.values) {
       for (final dark in [false, true]) {
         for (final page in [AppPage.focus, AppPage.roadmap]) {
@@ -173,6 +192,9 @@ void main() {
           });
         }
       }
+    }
+    } finally {
+      debugDisableShadows = originalShadows;
     }
   });
 }
