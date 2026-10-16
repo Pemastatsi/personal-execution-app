@@ -27,7 +27,7 @@ class FakeResponse extends Stream<List<int>> implements HttpClientResponse {
   @override
   final int statusCode;
   @override
-  final headers = FakeHeaders();
+  final FakeHeaders headers = FakeHeaders();
   @override
   StreamSubscription<List<int>> listen(void Function(List<int>)? onData, {
     Function? onError, void Function()? onDone, bool? cancelOnError,
@@ -43,7 +43,7 @@ class FakeRequest implements HttpClientRequest {
   @override
   bool followRedirects = true;
   @override
-  final headers = FakeHeaders();
+  final FakeHeaders headers = FakeHeaders();
   @override
   void write(Object? object) { body.write(object); }
   @override
