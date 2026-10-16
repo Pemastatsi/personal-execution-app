@@ -18,7 +18,18 @@ The next action, instruction and primary completion control are visible at defau
 
 ## Validation
 
-Validation results and final render provenance are recorded here after the final CI pass.
+Flutter 3.47.7 in [GitHub Actions run 38864356146](https://github.com/Pemastatsi/personal-execution-app/actions/runs/38864356146):
+
+- `flutter analyze`: no issues.
+- `flutter test`: all 27 tests passed, including the original suite and six concept/theme interaction flows.
+- Dedicated screenshot export: passed; twelve 780 × 1688 PNGs from the 390 × 844 logical viewport.
+- Concept tests cover instruction detail, completion and Undo, evidence inspection, milestone navigation, explicit outcome verification, theme switching, entry to Coach/Recovery, and checkpoint retention.
+- Android minimum-touch-target and labeled-target guidelines pass for the initial Focus controls in every concept/theme. Layout checks exercise both initial screens and resumed progress at 200% text scaling, including reachable primary actions.
+- Gallery checked in Chromium with Playwright: all four view/theme combinations load three full-resolution images; enlargement, Escape dismissal, all-twelve links, and 390-pixel mobile width pass.
+
+Conservative secondary-text contrast checks: Precision light 5.59:1 / dark 8.60:1; Atmospheric light 4.74:1 against the darkest light-gradient endpoint / dark 5.08:1 against the lightest instruction-surface endpoint; Editorial light 5.00:1 / dark 8.77:1. These are token-pair calculations, not a blanket accessibility certification.
+
+The large-text pass caught header crowding in A and B. The decorative wordmark now yields horizontal space; instruction and control text continue to scale. A theme-transition mismatch on return to the existing Coach was also fixed by preserving compatible button text styles.
 
 ## Limits and review questions
 

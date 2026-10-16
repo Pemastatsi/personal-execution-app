@@ -237,15 +237,34 @@ class ConceptScreen extends StatelessWidget {
           onPressed: () => model.go(AppPage.home),
           icon: const Icon(Icons.arrow_back_rounded, size: 21),
         ),
-        Expanded(child: Align(alignment: Alignment.centerLeft, child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: p.c ? heading('astra', size: 28) : Row(mainAxisSize: MainAxisSize.min, children: [
-            StarMark(size: 18, color: p.accent),
-            const SizedBox(width: 8),
-            Text('astra', style: TextStyle(fontFamily: p.heading, fontSize: 23, fontWeight: FontWeight.w600, letterSpacing: -1, color: p.ink)),
-          ]),
-        ))),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: p.c
+                  ? heading('astra', size: 28)
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        StarMark(size: 18, color: p.accent),
+                        const SizedBox(width: 8),
+                        Text(
+                          'astra',
+                          style: TextStyle(
+                            fontFamily: p.heading,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -1,
+                            color: p.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
         TextButton(
           key: const Key('switch-task'),
           onPressed: () => model.go(AppPage.recovery),
