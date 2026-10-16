@@ -80,7 +80,7 @@ class ChatGptSession {
       request.response.headers.set('Referrer-Policy', 'no-referrer');
       final uri = redirect.replace(query: request.uri.query);
       final valid = request.method == 'GET' && request.uri.path == redirect.path &&
-          request.headers.host == '127.0.0.1:${server.port}' &&
+          request.headers.value(HttpHeaders.hostHeader) == '127.0.0.1:${server.port}' &&
           request.uri.queryParametersAll['state']?.length == 1 &&
           request.uri.queryParameters['state'] == attempt.state;
       if (!valid || callback.isCompleted) {
