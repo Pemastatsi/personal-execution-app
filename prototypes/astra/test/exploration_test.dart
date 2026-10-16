@@ -135,18 +135,30 @@ void main() {
     }
   }
 
-  testWidgets('all initial concepts remain usable at 200 percent text', (tester) async {
+  testWidgets('all initial concepts remain usable at 200 percent text', (
+    tester,
+  ) async {
     await setup(tester);
     tester.platformDispatcher.textScaleFactorTestValue = 2;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     for (final direction in VisualDirection.values) {
       for (final dark in [false, true]) {
         for (final page in [AppPage.focus, AppPage.roadmap]) {
-          final model = ExecutionModel(MemoryStore())..page = page..dark = dark;
-          await tester.pumpWidget(AstraApp(key: ValueKey('$direction-$dark-$page'), model: model, direction: direction));
+          final model = ExecutionModel(MemoryStore())
+            ..page = page
+            ..dark = dark;
+          await tester.pumpWidget(
+            AstraApp(
+              key: ValueKey('$direction-$dark-$page'),
+              model: model,
+              direction: direction,
+            ),
+          );
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          final button = find.byKey(Key(page == AppPage.focus ? 'complete-action' : 'back-to-action'));
+          final button = find.byKey(
+            Key(page == AppPage.focus ? 'complete-action' : 'back-to-action'),
+          );
           expect(button.hitTestable(), findsOneWidget);
         }
       }
@@ -161,38 +173,40 @@ void main() {
     final originalShadows = debugDisableShadows;
     debugDisableShadows = false;
     try {
-    for (final direction in VisualDirection.values) {
-      for (final dark in [false, true]) {
-        for (final page in [AppPage.focus, AppPage.roadmap]) {
-          final model = ExecutionModel(MemoryStore())
-            ..dark = dark
-            ..page = page;
-          final key = GlobalKey();
-          await tester.pumpWidget(
-            RepaintBoundary(
-              key: key,
-              child: AstraApp(model: model, direction: direction),
-            ),
-          );
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-          await tester.runAsync(() async {
-            final boundary =
-                key.currentContext!.findRenderObject()!
-                    as RenderRepaintBoundary;
-            final image = await boundary.toImage(pixelRatio: 2);
-            final data = await image.toByteData(format: ui.ImageByteFormat.png);
-            await Directory(
-              'visual-exploration/screenshots',
-            ).create(recursive: true);
-            await File(
-              'visual-exploration/screenshots/${direction.name}-${page.name}-${dark ? 'dark' : 'light'}.png',
-            ).writeAsBytes(data!.buffer.asUint8List());
-            image.dispose();
-          });
+      for (final direction in VisualDirection.values) {
+        for (final dark in [false, true]) {
+          for (final page in [AppPage.focus, AppPage.roadmap]) {
+            final model = ExecutionModel(MemoryStore())
+              ..dark = dark
+              ..page = page;
+            final key = GlobalKey();
+            await tester.pumpWidget(
+              RepaintBoundary(
+                key: key,
+                child: AstraApp(model: model, direction: direction),
+              ),
+            );
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+            await tester.runAsync(() async {
+              final boundary =
+                  key.currentContext!.findRenderObject()!
+                      as RenderRepaintBoundary;
+              final image = await boundary.toImage(pixelRatio: 2);
+              final data = await image.toByteData(
+                format: ui.ImageByteFormat.png,
+              );
+              await Directory(
+                'visual-exploration/screenshots',
+              ).create(recursive: true);
+              await File(
+                'visual-exploration/screenshots/${direction.name}-${page.name}-${dark ? 'dark' : 'light'}.png',
+              ).writeAsBytes(data!.buffer.asUint8List());
+              image.dispose();
+            });
+          }
         }
       }
-    }
     } finally {
       debugDisableShadows = originalShadows;
     }

@@ -237,26 +237,15 @@ class ConceptScreen extends StatelessWidget {
           onPressed: () => model.go(AppPage.home),
           icon: const Icon(Icons.arrow_back_rounded, size: 21),
         ),
-        if (p.c)
-          heading('astra', size: 28)
-        else
-          Row(
-            children: [
-              StarMark(size: 18, color: p.accent),
-              const SizedBox(width: 8),
-              Text(
-                'astra',
-                style: TextStyle(
-                  fontFamily: p.heading,
-                  fontSize: 23,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -1,
-                  color: p.ink,
-                ),
-              ),
-            ],
-          ),
-        const Spacer(),
+        Expanded(child: Align(alignment: Alignment.centerLeft, child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: p.c ? heading('astra', size: 28) : Row(mainAxisSize: MainAxisSize.min, children: [
+            StarMark(size: 18, color: p.accent),
+            const SizedBox(width: 8),
+            Text('astra', style: TextStyle(fontFamily: p.heading, fontSize: 23, fontWeight: FontWeight.w600, letterSpacing: -1, color: p.ink)),
+          ]),
+        ))),
         TextButton(
           key: const Key('switch-task'),
           onPressed: () => model.go(AppPage.recovery),
@@ -582,7 +571,7 @@ class ConceptScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  label('Current milestone'),
+                  label(t.finished ? 'Verified outcome' : 'Current milestone'),
                   gap(5),
                   body(
                     t.milestone.title,
@@ -635,7 +624,7 @@ class ConceptScreen extends StatelessWidget {
       gap(24),
       const Divider(),
       gap(18),
-      label('Current milestone'),
+      label(t.finished ? 'Verified outcome' : 'Current milestone'),
       gap(6),
       body(t.milestone.title, size: 16, color: p.ink, weight: FontWeight.w500),
       gap(18),
