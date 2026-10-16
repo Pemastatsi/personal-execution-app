@@ -90,11 +90,17 @@ class FakeOpenAi extends OpenAiTransport {
   }
 }
 
+// Flutter's widget binding substitutes a 400-only HTTP client globally. This
+// override restores dart:io only for the fixture's local browser callback.
+// All OpenAI endpoints remain FakeOpenAi and never reach the network.
+class LoopbackHttpOverrides extends HttpOverrides {}
+
 Future<void> signInFixture(ChatGptSession session, FakeOpenAi server) =>
     session.signIn((uri) async {
       server.nonce = uri.queryParameters['nonce']!;
       final redirect = Uri.parse(uri.queryParameters['redirect_uri']!);
-      final client = HttpClient();
+      final client = HttpOverrides.runWithHttpOverrides(
+          HttpClient.new, LoopbackHttpOverrides());
       try {
         // Unsolicited state must not consume the pending attempt.
         var response = await (await client.getUrl(

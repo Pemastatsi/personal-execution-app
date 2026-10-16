@@ -82,12 +82,12 @@ class _Stage2PageState extends State<Stage2Page> {
     _draft.clear();
   }
 
-  Future<void> _signIn() => _run(() async {
+  Future<void> _signIn({bool requestPlanConsent = false}) => _run(() async {
     _signingIn = true;
     setState(
       () => _status = 'Finish sign-in in your browser, then return here.',
     );
-    await _session.signIn(openSystemBrowser);
+    await _session.signIn(openSystemBrowser, requestPlanConsent: requestPlanConsent);
     _clearConversation();
     _model = null;
     if (!_session.planEnabled) {
@@ -270,6 +270,12 @@ class _Stage2PageState extends State<Stage2Page> {
                 onPressed: _busy || !_ready ? null : _signIn,
                 child: const Text('Continue with ChatGPT'),
               ),
+              if (_session.active != null &&
+                  !(_session.active!['scopes'] as List).contains(planScope))
+                OutlinedButton(
+                  onPressed: _busy ? null : () => _signIn(requestPlanConsent: true),
+                  child: const Text('Enable ChatGPT plan use'),
+                ),
               if (_signingIn)
                 TextButton(
                   onPressed: _session.cancelSignIn,

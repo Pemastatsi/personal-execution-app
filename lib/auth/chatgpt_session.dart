@@ -69,7 +69,7 @@ class ChatGptSession {
         : accounts.firstWhere((a) => a['client_id'] == clientId);
   }
 
-  Future<void> signIn(BrowserOpener openBrowser) async {
+  Future<void> signIn(BrowserOpener openBrowser, {bool requestPlanConsent = false}) async {
     if (_authorization != null) {
       throw const ConnectionFailure('A sign-in is already open.');
     }
@@ -88,6 +88,7 @@ class ChatGptSession {
       hostId: _record!['host_id'] as String,
       clientId: previous?['client_id'] as String? ?? _pendingIssuedClientId,
       idTokenHint: previous?['id_token'] as String?,
+      requestPlanConsent: requestPlanConsent,
     );
     final callback = Completer<Uri>();
     _authorization = callback;

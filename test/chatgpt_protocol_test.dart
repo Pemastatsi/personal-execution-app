@@ -39,6 +39,21 @@ void main() {
     );
   });
 
+  test('only explicit plan-enable action requests renewed consent', () {
+    final normal = AuthorizationAttempt(
+      redirect: Uri.parse('http://127.0.0.1:1455/auth/callback'),
+      hostId: newHostId(), clientId: 'issued',
+    );
+    expect(normal.authorizationUri.queryParameters['prompt'], isNull);
+    expect(normal.authorizationUri.queryParameters['agent_name_hint'], isNull);
+    final enabled = AuthorizationAttempt(
+      redirect: normal.redirect, hostId: normal.hostId, clientId: 'issued',
+      requestPlanConsent: true,
+    );
+    expect(enabled.authorizationUri.queryParameters['prompt'], 'consent');
+    expect(enabled.authorizationUri.queryParameters['scope'], contains(planScope));
+  });
+
   test(
     'callback rejects wrong state, host, path, duplicates, denial and changed client',
     () {

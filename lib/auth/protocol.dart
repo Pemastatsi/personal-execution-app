@@ -44,6 +44,7 @@ class AuthorizationAttempt {
     required this.hostId,
     this.clientId,
     this.idTokenHint,
+    this.requestPlanConsent = false,
   }) : state = randomUrlToken(),
        nonce = randomUrlToken(),
        verifier = randomUrlToken(48);
@@ -51,6 +52,7 @@ class AuthorizationAttempt {
   final String hostId;
   final String? clientId;
   final String? idTokenHint;
+  final bool requestPlanConsent;
   final String state;
   final String nonce;
   final String verifier;
@@ -62,6 +64,7 @@ class AuthorizationAttempt {
           if (clientId == null) 'agent_name_hint': 'Personal Execution App',
           'ext_agent_host_id': hostId,
           'id_token_hint': ?idTokenHint,
+          if (requestPlanConsent) 'prompt': 'consent',
           'response_type': 'code',
           'redirect_uri': redirect.toString(),
           'scope': requestedScopes,
