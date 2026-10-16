@@ -29,69 +29,85 @@ void main() {
 
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
-  test('platform failures never fall back or expose native diagnostics', () async {
-    final store = ChatGptCredentialStore(storage: _UnavailableStorage());
-    for (final operation in [
-      () => store.read(first.clientId),
-      () => store.write(first),
-      () => store.delete(first.clientId),
-    ]) {
-      await expectLater(
-        operation(),
-        throwsA(
-          isA<CredentialStorageException>().having(
-            (error) => error.toString(),
-            'safe diagnostic',
-            isNot(contains('fake-private-platform-diagnostic')),
+  test(
+    'platform failures never fall back or expose native diagnostics',
+    () async {
+      final store = ChatGptCredentialStore(storage: _UnavailableStorage());
+      for (final operation in [
+        () => store.read(first.clientId),
+        () => store.write(first),
+        () => store.delete(first.clientId),
+      ]) {
+        await expectLater(
+          operation(),
+          throwsA(
+            isA<CredentialStorageException>().having(
+              (error) => error.toString(),
+              'safe diagnostic',
+              isNot(contains('fake-private-platform-diagnostic')),
+            ),
           ),
+        );
+      }
+    },
+  );
+
+  test(
+    'registrations remain separate when tokens rotate or are deleted',
+    () async {
+      const store = ChatGptCredentialStore();
+      await store.write(first);
+      await store.write(second);
+      await store.write(
+        const ChatGptCredentials(
+          clientId: 'test-issued-client-a',
+          accessToken: 'fake-access-rotated',
+          refreshToken: 'fake-refresh-rotated',
         ),
       );
-    }
-  });
 
-  test('registrations remain separate when tokens rotate or are deleted', () async {
-    const store = ChatGptCredentialStore();
-    await store.write(first);
-    await store.write(second);
-    await store.write(
-      const ChatGptCredentials(
-        clientId: 'test-issued-client-a',
-        accessToken: 'fake-access-rotated',
-        refreshToken: 'fake-refresh-rotated',
-      ),
-    );
+      // A new boundary instance reads the same secure platform store.
+      const reopened = ChatGptCredentialStore();
+      final rotated = await reopened.read(first.clientId);
+      expect(rotated!.accessToken, 'fake-access-rotated');
+      expect(rotated.refreshToken, 'fake-refresh-rotated');
+      expect(
+        (await reopened.read(second.clientId))!.refreshToken,
+        second.refreshToken,
+      );
 
-    // A new boundary instance reads the same secure platform store.
-    const reopened = ChatGptCredentialStore();
-    final rotated = await reopened.read(first.clientId);
-    expect(rotated!.accessToken, 'fake-access-rotated');
-    expect(rotated.refreshToken, 'fake-refresh-rotated');
-    expect((await reopened.read(second.clientId))!.refreshToken, second.refreshToken);
-
-    await reopened.delete(first.clientId);
-    expect(await reopened.read(first.clientId), isNull);
-    expect((await reopened.read(second.clientId))!.accessToken, second.accessToken);
-  });
+      await reopened.delete(first.clientId);
+      expect(await reopened.read(first.clientId), isNull);
+      expect(
+        (await reopened.read(second.clientId))!.accessToken,
+        second.accessToken,
+      );
+    },
+  );
 
   test('refuses bootstrap client ID and empty tokens without saving', () async {
     const store = ChatGptCredentialStore();
     for (final clientId in ['', ' ', 'dynamic_agent_client']) {
       await expectLater(
-        store.write(ChatGptCredentials(
-          clientId: clientId,
-          accessToken: 'fake-access',
-          refreshToken: 'fake-refresh',
-        )),
+        store.write(
+          ChatGptCredentials(
+            clientId: clientId,
+            accessToken: 'fake-access',
+            refreshToken: 'fake-refresh',
+          ),
+        ),
         throwsArgumentError,
       );
     }
     for (final tokens in [('', 'fake-refresh'), ('fake-access', '')]) {
       await expectLater(
-        store.write(ChatGptCredentials(
-          clientId: first.clientId,
-          accessToken: tokens.$1,
-          refreshToken: tokens.$2,
-        )),
+        store.write(
+          ChatGptCredentials(
+            clientId: first.clientId,
+            accessToken: tokens.$1,
+            refreshToken: tokens.$2,
+          ),
+        ),
         throwsArgumentError,
       );
     }
@@ -99,7 +115,8 @@ void main() {
   });
 
   test('malformed or mismatched credentials fail without leaking data', () async {
-    final key = 'chatgpt.registration.v1.'
+    final key =
+        'chatgpt.registration.v1.'
         '${base64Url.encode(utf8.encode(first.clientId))}';
     for (final value in [
       'fake-private-corrupt-record',

@@ -20,13 +20,6 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - name: Format proof of concept for review
-        run: |
-          dart format lib/auth lib/stage2 test/chatgpt* test/openai_transport_test.dart test/widget_test.dart
-          echo FORMAT_PATCH_BEGIN
-          git diff -- lib/auth lib/stage2 test | gzip | base64 -w 0
-          echo
-          echo FORMAT_PATCH_END
       - run: flutter analyze
       - run: flutter test
 
