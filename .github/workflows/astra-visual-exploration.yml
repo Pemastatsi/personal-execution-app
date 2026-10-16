@@ -1,0 +1,48 @@
+name: Astra visual exploration
+on:
+  pull_request:
+    paths: ['prototypes/astra/**', '.github/workflows/astra-visual-exploration.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: astra-exploration-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/astra
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test --reporter expanded 2>&1 | tee exploration-test-results.txt
+        if: ${{ !cancelled() }}
+      - name: Render twelve actual Flutter screens at 390 × 844
+        if: ${{ !cancelled() }}
+        run: flutter test test/exploration_test.dart --plain-name 'export twelve' --dart-define=EXPORT_EXPLORATION=true --reporter expanded
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: astra-exploration-review
+          path: |
+            prototypes/astra/visual-exploration/screenshots/*.png
+            prototypes/astra/lib/
+            prototypes/astra/test/
+            prototypes/astra/exploration-test-results.txt
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: astra-visual-gallery
+          path: prototypes/astra/visual-exploration/
+          retention-days: 30

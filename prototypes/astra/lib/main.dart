@@ -5,6 +5,7 @@ import 'design.dart';
 import 'model.dart';
 import 'screens.dart';
 import 'storage.dart';
+import 'exploration/concepts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,24 +49,34 @@ Future<void> main() async {
 
 class AstraApp extends StatelessWidget {
   final ExecutionModel model;
-  const AstraApp({super.key, required this.model});
+  final VisualDirection? direction;
+  const AstraApp({super.key, required this.model, this.direction});
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: model,
     builder: (context, _) => MaterialApp(
       title: 'Astra',
       debugShowCheckedModeBanner: false,
-      theme: astraTheme(false),
-      darkTheme: astraTheme(true),
+      theme:
+          direction != null &&
+              (model.page == AppPage.focus || model.page == AppPage.roadmap)
+          ? visualTheme(direction!, false)
+          : astraTheme(false),
+      darkTheme:
+          direction != null &&
+              (model.page == AppPage.focus || model.page == AppPage.roadmap)
+          ? visualTheme(direction!, true)
+          : astraTheme(true),
       themeMode: model.dark ? ThemeMode.dark : ThemeMode.light,
-      home: AstraShell(model: model),
+      home: AstraShell(model: model, direction: direction),
     ),
   );
 }
 
 class AstraShell extends StatefulWidget {
   final ExecutionModel model;
-  const AstraShell({super.key, required this.model});
+  final VisualDirection? direction;
+  const AstraShell({super.key, required this.model, this.direction});
   @override
   State<AstraShell> createState() => _AstraShellState();
 }
@@ -125,9 +136,21 @@ class _AstraShellState extends State<AstraShell> {
                           key: ValueKey(model.page),
                           child: switch (model.page) {
                             AppPage.home => HomeScreen(model: model),
-                            AppPage.focus => FocusScreen(model: model),
+                            AppPage.focus =>
+                              widget.direction == null
+                                  ? FocusScreen(model: model)
+                                  : ConceptScreen(
+                                      model: model,
+                                      direction: widget.direction!,
+                                    ),
                             AppPage.coach => CoachScreen(model: model),
-                            AppPage.roadmap => RoadmapScreen(model: model),
+                            AppPage.roadmap =>
+                              widget.direction == null
+                                  ? RoadmapScreen(model: model)
+                                  : ConceptScreen(
+                                      model: model,
+                                      direction: widget.direction!,
+                                    ),
                             AppPage.recovery => RecoveryScreen(model: model),
                           },
                         ),
