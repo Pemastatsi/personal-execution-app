@@ -15,6 +15,9 @@ class ChatGptSession {
   Map<String, dynamic>? _record;
   Map<String, dynamic>? active;
   Future<void>? _refresh;
+  int _requestGeneration = 0;
+  int _authorizationGeneration = 0;
+  bool requestsPaused = false;
   HttpServer? _callback;
   Completer<Uri>? _authorization;
   List<Map<String, dynamic>> models = [];
@@ -46,6 +49,8 @@ class ChatGptSession {
   }
 
   void select(String? clientId) {
+    cancelInference();
+    requestsPaused = false;
     models = [];
     allowanceOnlyConfirmed = false;
     active = clientId == null ? null : accounts.firstWhere((a) => a['client_id'] == clientId);
@@ -54,8 +59,13 @@ class ChatGptSession {
   Future<void> signIn(BrowserOpener openBrowser) async {
     if (_authorization != null) throw const ConnectionFailure('A sign-in is already open.');
     _record ??= await vault.read();
+    final generation = ++_authorizationGeneration;
     final previous = active;
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    if (generation != _authorizationGeneration) {
+      await server.close(force: true);
+      throw const ConnectionFailure('Sign-in cancelled.');
+    }
     _callback = server;
     final redirect = Uri.parse('http://127.0.0.1:${server.port}/auth/callback');
     final attempt = AuthorizationAttempt(redirect: redirect, hostId: _record!['host_id'] as String,
@@ -99,7 +109,11 @@ class ChatGptSession {
         await transport.jwks(), result.clientId, nonce: attempt.nonce,
         subject: previous?['subject'] as String?);
       final account = _tokenRecord(tokens, result.clientId, identity);
+      if (generation != _authorizationGeneration) {
+        throw const ConnectionFailure('Sign-in cancelled before activation.');
+      }
       await _saveAccount(account);
+      requestsPaused = false;
       models = [];
       allowanceOnlyConfirmed = false;
     } finally {
@@ -174,12 +188,25 @@ class ChatGptSession {
         .where((m) => m['visibility'] == 'list' && m['slug'] is String && m['display_name'] is String)
         .toList();
     if (models.isEmpty) throw const ConnectionFailure('No eligible models are available to this account.');
+    requestsPaused = false;
   }
 
   Stream<String> infer(String model, List<Map<String, dynamic>> history) async* {
     if (!allowanceOnlyConfirmed) throw const ConnectionFailure('Confirm allowance-only settings before sending.');
     if (!models.any((m) => m['slug'] == model)) throw const ConnectionFailure('Refresh models and select an available model.');
-    yield* transport.infer(await accessToken(), model, history);
+    if (requestsPaused) throw const ConnectionFailure('Requests are paused. Check Manage usage, then explicitly refresh models before trying again.');
+    final generation = _requestGeneration;
+    final token = await accessToken();
+    if (generation != _requestGeneration) throw const ConnectionFailure('Request stopped before sending.');
+    try {
+      yield* transport.infer(token, model, history);
+    } on ConnectionFailure catch (error) {
+      if (error.status == 401 || error.status == 403 || error.status == 429 ||
+          ['subscription_sharing_usage_limit_exceeded', 'subscription_sharing_user_not_eligible'].contains(error.code)) {
+        requestsPaused = true;
+      }
+      rethrow;
+    }
   }
 
   Future<void> _clearTokens(Map<String, dynamic> current) async {
@@ -193,7 +220,7 @@ class ChatGptSession {
   }
 
   Future<bool> signOut() async {
-    transport.cancelInference();
+    cancelInference();
     cancelSignIn();
     final current = active;
     if (current == null) return true;
@@ -217,12 +244,18 @@ class ChatGptSession {
     return revoked;
   }
 
+  void cancelInference() {
+    _requestGeneration++;
+    transport.cancelInference();
+  }
+
   void cancelSignIn() {
+    _authorizationGeneration++;
     final callback = _authorization;
     if (callback != null && !callback.isCompleted) {
       callback.completeError(const ConnectionFailure('Sign-in cancelled.'));
     }
     unawaited(_callback?.close(force: true));
   }
-  void dispose() { cancelSignIn(); transport.close(); }
+  void dispose() { cancelSignIn(); cancelInference(); transport.close(); }
 }

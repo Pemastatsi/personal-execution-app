@@ -6,7 +6,12 @@ import 'protocol.dart';
 
 /// Fixed origins; never follows redirects with bearer credentials.
 class OpenAiTransport {
-  final HttpClient _client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
+  OpenAiTransport({HttpClient Function()? clientFactory})
+      : _createClient = clientFactory ?? HttpClient.new {
+    _client = _createClient()..connectionTimeout = const Duration(seconds: 20);
+  }
+  final HttpClient Function() _createClient;
+  late final HttpClient _client;
   HttpClient? _streamClient;
 
   Future<HttpClientResponse> _request(String method, Uri uri, {
@@ -54,7 +59,7 @@ class OpenAiTransport {
   }
 
   Stream<String> infer(String accessToken, String model, List<Map<String, dynamic>> input) async* {
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
+    final client = _createClient()..connectionTimeout = const Duration(seconds: 20);
     _streamClient = client;
     try {
       final response = await _request('POST', Uri.parse('$resource/responses'), client: client,

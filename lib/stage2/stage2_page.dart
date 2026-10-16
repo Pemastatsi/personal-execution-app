@@ -62,7 +62,7 @@ class _Stage2PageState extends State<Stage2Page> {
 
   void _clearConversation() {
     _sendGeneration++;
-    _session.transport.cancelInference();
+    _session.cancelInference();
     _history.clear(); _turns.clear(); _partial = ''; _image = null; _draft.clear();
   }
 
@@ -215,7 +215,7 @@ class _Stage2PageState extends State<Stage2Page> {
               final attachment = await selectScreenshot();
               if (mounted) _image = attachment;
             }), child: const Text('Attach screenshot')),
-            FilledButton(onPressed: _busy || !_session.planEnabled || !_session.allowanceOnlyConfirmed || _model == null
+            FilledButton(onPressed: _busy || !_session.planEnabled || _session.requestsPaused || !_session.allowanceOnlyConfirmed || _model == null
               ? null : _send, child: const Text('Send')),
             TextButton(onPressed: _signingIn ? null : () => setState(() {
               _clearConversation(); _status = 'Conversation and local draft cleared.';

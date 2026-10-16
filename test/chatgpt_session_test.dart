@@ -141,4 +141,18 @@ void main() {
     await expectLater(session.signIn((_) async { session.cancelSignIn(); }), throwsA(isA<ConnectionFailure>()));
     expect(api.exchange, isNull);
   });
+  test('stop during refresh prevents a late inference request', () async {
+    final api = FakeOpenAi()..lifetime = 1;
+    final session = ChatGptSession(transport: api);
+    addTearDown(session.dispose);
+    await signInFixture(session, api);
+    session.models = [{'slug': 'eligible'}];
+    session.allowanceOnlyConfirmed = true;
+    final request = session.infer('eligible', []).drain<void>();
+    await Future<void>.delayed(const Duration(milliseconds: 2));
+    session.cancelInference();
+    await expectLater(request, throwsA(isA<ConnectionFailure>()));
+    expect(api.inferences, 0);
+  });
+
 }
