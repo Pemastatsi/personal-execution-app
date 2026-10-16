@@ -1,6 +1,10 @@
-# Stage 2 — Sign in with ChatGPT implementation reference
+# Stage 2 — current official integration reference
 
-Research date: 2026-10-15. This note summarizes the official documentation; recheck the linked original sources when network access is restored. It is **not** proof that this repository, account, or Android build is eligible.
+Rechecked 2026-10-16. This supersedes the earlier private-repository blocker.
+GitHub visibility is public. See [current Stage 2 status](stage2-status.md) for
+remaining licensing, actual registration, billing-setting and physical-device
+gates. Public visibility is evidence of source availability, not proof of an
+open-source license or OpenAI account eligibility.
 
 ## Official primary sources
 - Overview: https://developers.openai.com/siwc/token-sharing-open-source
@@ -14,7 +18,7 @@ Research date: 2026-10-15. This note summarizes the official documentation; rech
 
 ## Confirmed flow to investigate and implement
 
-1. Open-source, locally running clients can request **ChatGPT plan usage** as an optional permission in Sign in with ChatGPT. This permission does **not** provide existing ChatGPT conversations or hosted connector access. Eligibility for this particular **private** repository and account has **not been verified**.
+1. Open-source, locally running clients can request **ChatGPT plan usage** as an optional permission in Sign in with ChatGPT. This permission does **not** provide existing ChatGPT conversations or hosted connector access. Actual registration and account eligibility have **not been verified**.
 2. Create/persist a distinct, opaque `ext_agent_host_id` for each installation before sign-in (supported `urn:uuid:<uuid-v4>`, among other documented formats). Use an actual app-name `agent_name_hint`.
 3. On first registration use `client_id=dynamic_agent_client`, then retain the **issued** `client_id` returned from the callback. Use system browser, a loopback `http://127.0.0.1:<port>/auth/callback` receiver started before redirect, fresh state and nonce, and PKCE S256. Only callback **port** may change between attempts.
 4. Request `openid profile email offline_access resource.invoke chatgpt.tokens.use.direct`, with `resource=https://api.openai.com/v1`. Exchange the code at `https://auth.openai.com/api/accounts/oauth/token` using the issued client ID, exact redirect URI, verifier, and resource. No client secret or paid API key.
@@ -24,11 +28,16 @@ Research date: 2026-10-15. This note summarizes the official documentation; rech
 8. No separately billed API key, paid credits, or billing fallback is permitted. When plan usage is unavailable, maintain fully functioning offline task management and offer an explicit ChatGPT app fallback.
 
 ## Remaining validation gates
-- Is this GitHub private repo eligible, or must code be published open source? Do not change visibility without user approval.
+- Main still needs an owner-reviewed open-source license; this PR proposes MIT. No particular license is mandated in the reviewed SIWC docs.
 - Does this Android Flutter app successfully receive the documented loopback browser redirect on a real Android device?
 - Does the user's actual account grant the plan usage scope and serve a successful streamed Responses request?
 - Can the cloud runner build a test APK, and can user install and test it?
 - No test passing with mocks is proof of real subscription inference.
 
-## Cloud access workaround
-The Codex environment has reported a proxy CONNECT 403 to official documentation. This source-checked reference allows preliminary offline implementation/review, but is not permission to invent or bypass unavailable documentation. Save/publish the environment domain allowlist separately; then start a **new** task and retest access. If proxy 403 persists, report it distinctly as proxy policy, not an OAuth failure.
+## Subscription-only safeguard
+
+The [official credit-control guide](https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites)
+says app credit use requires explicit opt-in and an app limit of 100%; a lower
+app limit prevents credit use. Keep credit use off and save this app's limit
+below 100%. The documented API does not expose these settings, so local
+confirmation cannot replace checking the saved ChatGPT preference.

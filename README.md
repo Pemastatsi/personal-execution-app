@@ -1,23 +1,39 @@
 # Personal Execution App
 
-An offline-first, ADHD-friendly personal task execution app for Android and Windows. This repository is an intentionally small Flutter development starter; it does not yet implement the full application or AI sign-in.
+An offline-first Flutter starter for Android and Windows. Stage 2 adds an
+**isolated ChatGPT authentication proof of concept**, without integrating AI into
+task data or building the full application. Actual Plus-account authentication,
+device compatibility and subscription inference remain unverified.
 
-## Requirements
+See [Stage 2 status and device test instructions](docs/stage2-status.md) for
+eligibility, registration, billing controls and verification limits. This PR
+proposes the MIT license; main's licensing remains pending until owner review.
 
-- Flutter 3.47.7 (Dart SDK supplied by Flutter)
-- Android SDK and Java 17+ for Android builds
-- Windows with Visual Studio C++ desktop workload for Windows builds
+## Development
 
-## Develop and validate
-
-From the repository root:
+Use Flutter 3.47.7 (Dart >=3.12), Android SDK/JDK 17, or Visual Studio on Windows.
 
 ```sh
 flutter pub get
 flutter analyze
 flutter test
+flutter build apk --debug
 ```
 
-Build Android with `flutter build apk --debug` on a runner with Android SDK tools. Build Windows with `flutter build windows --debug` on Windows with Visual Studio installed.
+SQLite task storage stays local. Credentials use platform secure storage.
+Conversations and screenshot attachments stay in memory and go to OpenAI only
+when explicitly sent. Android backup and recents capture are disabled.
 
-SQLite dependencies include `sqflite` for Android and `sqflite_common_ffi` for Windows desktop. `flutter_secure_storage` provides platform secure storage for future credentials. Keep task records local by default; do not add a remote database or separately billed inference API. Verify the supported ChatGPT sign-in and subscription inference flow as a separate feasibility task before designing an integration.
+## Download the Android proof of concept
+
+Open this PR's successful **Flutter CI** run in GitHub Actions. Download the
+`personal-execution-stage2-android-debug-<run number>` artifact and extract
+`app-debug.apk`. Artifacts expire after seven days. No signing secret is needed.
+
+Sign in with ChatGPT, then open **Manage usage**. Keep app credit use off and save
+this app's usage limit **below 100%** before confirming the settings and sending.
+The app cannot inspect these external settings. If they cannot be verified, keep
+Send disabled. No API keys, credit purchases or paid fallback are configured.
+
+Passing fixture tests or installing the APK does not prove live subscription
+inference. Follow the physical-device acceptance procedure before claiming it.
