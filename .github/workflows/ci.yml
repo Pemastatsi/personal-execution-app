@@ -20,6 +20,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Export resolved lockfile for review
+        run: |
+          echo LOCKFILE_BEGIN
+          cat pubspec.lock
+          echo LOCKFILE_END
       - run: flutter analyze
       - run: flutter test
 
