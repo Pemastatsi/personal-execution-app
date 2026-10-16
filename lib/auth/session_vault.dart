@@ -29,8 +29,15 @@ class SessionVault {
               .hasMatch(record['host_id'] as String)) { throw const FormatException(); }
       for (final account in record['accounts'] as List) {
         if (account is! Map || account['client_id'] is! String ||
+            (account['client_id'] as String).isEmpty ||
             account['client_id'] == 'dynamic_agent_client' ||
-            account['subject'] is! String || account['scopes'] is! List) {
+            account['subject'] is! String || (account['subject'] as String).isEmpty ||
+            account['scopes'] is! List || (account['scopes'] as List).any((s) => s is! String)) {
+          throw const FormatException();
+        }
+        final hasTokens = ['access_token', 'refresh_token', 'id_token', 'expires_at'].any(account.containsKey);
+        if (hasTokens && (account['expires_at'] is! int ||
+            ['access_token', 'refresh_token', 'id_token'].any((k) => account[k] is! String || (account[k] as String).isEmpty))) {
           throw const FormatException();
         }
       }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,6 +9,7 @@ import 'package:personal_execution_app/auth/chatgpt_session.dart';
 import 'package:personal_execution_app/auth/openai_transport.dart';
 import 'package:personal_execution_app/auth/protocol.dart';
 import 'package:personal_execution_app/auth/session_vault.dart';
+import 'package:personal_execution_app/storage/chatgpt_credential_store.dart';
 
 class FakeOpenAi extends OpenAiTransport {
   final key = JsonWebKey.generate('RS256');
@@ -153,6 +155,31 @@ void main() {
     session.cancelInference();
     await expectLater(request, throwsA(isA<ConnectionFailure>()));
     expect(api.inferences, 0);
+  });
+
+  test('reauthorization retains welcome and sign-out removes all tokens but not host', () async {
+    final api = FakeOpenAi();
+    final session = ChatGptSession(transport: api);
+    addTearDown(session.dispose);
+    await signInFixture(session, api);
+    await session.acknowledgeWelcome();
+    await signInFixture(session, api);
+    expect(session.active!['welcomed'], isTrue);
+    final host = (await session.vault.read())['host_id'];
+    expect(await session.signOut(), isFalse); // Fake provider cannot confirm revocation.
+    expect(session.active!['access_token'], isNull);
+    expect(session.active!['id_token'], isNull);
+    expect((await session.vault.read())['host_id'], host);
+    expect(session.active!['client_id'], 'issued-client');
+  });
+  test('v2 corrupt credential records fail closed instead of using plaintext', () async {
+    for (final value in ['private-corrupt-data', jsonEncode({
+      'host_id': newHostId(), 'accounts': [{'client_id': 'issued', 'subject': 'subject',
+        'scopes': [planScope], 'access_token': 'incomplete-token-pair'}],
+    })]) {
+      FlutterSecureStorage.setMockInitialValues({SessionVault.key: value});
+      await expectLater(SessionVault().read(), throwsA(isA<CredentialStorageException>()));
+    }
   });
 
 }

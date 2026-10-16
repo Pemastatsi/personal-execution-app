@@ -18,6 +18,7 @@ class ChatGptSession {
   int _requestGeneration = 0;
   int _authorizationGeneration = 0;
   bool requestsPaused = false;
+  String? _pendingIssuedClientId;
   HttpServer? _callback;
   Completer<Uri>? _authorization;
   List<Map<String, dynamic>> models = [];
@@ -50,6 +51,7 @@ class ChatGptSession {
 
   void select(String? clientId) {
     cancelInference();
+    _pendingIssuedClientId = null;
     requestsPaused = false;
     models = [];
     allowanceOnlyConfirmed = false;
@@ -69,7 +71,7 @@ class ChatGptSession {
     _callback = server;
     final redirect = Uri.parse('http://127.0.0.1:${server.port}/auth/callback');
     final attempt = AuthorizationAttempt(redirect: redirect, hostId: _record!['host_id'] as String,
-      clientId: previous?['client_id'] as String?, idTokenHint: previous?['id_token'] as String?);
+      clientId: previous?['client_id'] as String? ?? _pendingIssuedClientId, idTokenHint: previous?['id_token'] as String?);
     final callback = Completer<Uri>();
     _authorization = callback;
     // Attach before opening browser. Invalid/unsolicited requests cannot consume
@@ -100,6 +102,7 @@ class ChatGptSession {
       unawaited(flow.then<void>((_) {}, onError: (Object _, StackTrace _) {}));
       await openBrowser(attempt.authorizationUri);
       final result = await flow;
+      if (previous == null) _pendingIssuedClientId = result.clientId;
       final tokens = await transport.json('POST', Uri.parse('$issuer/api/accounts/oauth/token'), form: {
         'grant_type': 'authorization_code', 'client_id': result.clientId,
         'code': result.code, 'code_verifier': attempt.verifier,
@@ -109,10 +112,12 @@ class ChatGptSession {
         await transport.jwks(), result.clientId, nonce: attempt.nonce,
         subject: previous?['subject'] as String?);
       final account = _tokenRecord(tokens, result.clientId, identity);
+      if (previous?['welcomed'] == true) account['welcomed'] = true;
       if (generation != _authorizationGeneration) {
         throw const ConnectionFailure('Sign-in cancelled before activation.');
       }
       await _saveAccount(account);
+      _pendingIssuedClientId = null;
       requestsPaused = false;
       models = [];
       allowanceOnlyConfirmed = false;
