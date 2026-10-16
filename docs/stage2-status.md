@@ -1,81 +1,129 @@
-# Stage 2 status
+# Stage 2: isolated ChatGPT authentication proof of concept
 
-Stage 2 is incomplete: app eligibility and actual subscription inference remain
-unverified. This branch provides a blocked Android/Windows Flutter scaffold and
-build automation, not a working ChatGPT integration.
+Stage 2 is **not verified complete**. This branch implements the documented flow;
+actual ChatGPT Plus sign-in and a completed, allowance-attributed inference need
+an account holder and a physical Android device. No full application integration
+has begun. No real OAuth token or inference request has been used in development.
 
-## Delivered
+## Eligibility and registration (checked 2026-10-16)
 
-- A scrollable connection page explaining the private-client eligibility gate.
-- Disabled sign-in, send, and screenshot controls; no OAuth or inference client,
-  paid provider, embedded API key, credit purchase, or fallback inference route.
-- An in-memory draft with explicit clearing. It is neither persisted nor sent.
-- An explicit manual fallback that copies only `https://chatgpt.com/`. The user
-  opens ChatGPT and moves context themselves.
-- Secure credential-store groundwork using the existing
-  `flutter_secure_storage` dependency. Registrations use separate keys; token
-  rotation writes the access/refresh pair as one record. Corrupt records and
-  platform errors fail without a plaintext fallback or raw credential logging.
-  There is no production caller. This does **not** validate OAuth tokens or
-  implement refresh, revocation, account discovery, or authentication.
-- Android backup disabled to avoid backing up future credential storage.
-- Focused widget and credential-store tests, preserving existing SQLite tests.
-- CI analysis and tests before Android/Windows builds, Java 17 for Android, and
-  an uploaded debug APK with seven-day retention. No signing secret is needed.
+GitHub reports `Pemastatsi/personal-execution-app` as **public**. Main has no
+open-source license. This PR proposes MIT in `LICENSE`, for owner review before
+merging; public visibility alone does not grant an open-source license. The
+published SIWC docs do not prescribe a particular license or list repository
+popularity, minimum age, Android allowlisting, or a separate OSS partner approval
+step. This is not evidence that OpenAI has approved this app or account.
 
-## Feature verification
+The [official quickstart](https://developers.openai.com/siwc/quickstart) describes
+plan usage for open-source partners and selected private clients. The
+[OSS sign-in guide](https://developers.openai.com/siwc/token-sharing-open-source/sign-in)
+documents first registration with `dynamic_agent_client`, then the **issued**
+client ID for exchange and reauthorization, without a client secret or partner
+API key. Registration and user/workspace consent occur in the system browser.
+There is no borrowed Codex client ID, ChatGPT cookie, or backend-api route.
 
-| Requested capability | Status |
-| --- | --- |
-| Official documentation access | Read successfully through the connected web tool; shell still blocked |
-| Private app eligibility | Unverified; official quickstart supports selected private clients |
-| Sign in with ChatGPT | Disabled pending eligibility; not implemented |
-| Secure token storage | Persistence boundary implemented; tests use a fake platform store |
-| Available model discovery | Not implemented; no account/model availability claimed |
-| Text conversation | Local draft only; no inference |
-| Screenshot analysis | Disabled; no image selected or sent |
-| Usage/authentication failures | Live handling deferred with the live integration |
-| Actual Plus-only inference | Not attempted or verified |
+Remaining gates: owner review of licensing, actual registration acceptance,
+granted `chatgpt.tokens.use.direct` permission, account-specific model access,
+and successful subscription inference. If OpenAI returns a policy/eligibility
+error, that is an actual admission blocker; it must not trigger a paid fallback.
+Android is not expressly guaranteed by these docs. The prescribed
+`http://127.0.0.1:<port>/auth/callback` must work in the device's browser and app
+lifecycle before Android compatibility can be claimed.
 
-## Validation
+## Existing subscription allowance only
 
-Local `git diff --check` passes. Local `flutter analyze` and `flutter test` were
-attempted but could not start because Flutter is absent. SDK installation is
-blocked by proxy policy for `storage.googleapis.com`. CI runs the entire existing
-and new Flutter test suite and analysis; its results must be checked before
-merging. Secure-storage mocks do not verify Android Keystore, Windows credential
-storage, or any OAuth/network behavior on a physical device.
+Only an OAuth bearer token from the documented flow reaches the public
+`/v1/models` and `/v1/responses` endpoints. No API-key configuration, separately
+billed provider, credit purchase, top-up, paid fallback, or automatic inference
+retry is present.
 
-To get the APK after a successful run: open the PR's **Flutter CI** run, then
-download **personal-execution-stage2-android-debug-<run number>** from Artifacts.
-Extract `app-debug.apk`. This is an installation-test build with AI disabled.
+[OpenAI's billing-control guidance](https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites)
+states that app credit use is a separate opt-in, off by default. An app usage
+limit **below 100% prevents credit use**, even if the account-level switch is on.
+Before any inference, the user must keep app credit use off, save this app's limit
+below 100%, then confirm the settings in the proof of concept. This confirmation
+is memory-only and resets when the account changes or the app restarts.
 
-## Required next action
+The documented client API exposes **no way to inspect or set those billing
+preferences, or to force allowance-only charging per request**. This app does not
+claim it has remotely verified the settings. If the controls cannot be inspected
+and saved for this registration, **do not enable Send**; allowance-only use remains
+blocked. Do not buy credits or raise limits to solve eligibility or usage failures.
+Any later external change to those settings invalidates the local confirmation.
 
-Obtain OpenAI confirmation that this **private personal Android/Windows app** may
-use Sign in with ChatGPT plan usage on the existing Plus allowance, with no paid
-credits or separately billed inference. The official entry point is the
-[Sign in with ChatGPT interest form](https://openai.com/form/sign-in-with-chatgpt-interest/),
-which currently targets commercial partners; do not assume acceptance. Provide
-the resulting eligibility decision and supported client-registration instructions.
-If approval was already obtained, supply that documentation instead.
+## Implemented scope
 
-Keep repository visibility unchanged. Making code public would require a separate
-user decision and an appropriate open-source license/release review; this branch
-does not propose or perform that action.
+- System-browser OAuth with loopback listener bound only to IPv4 loopback,
+  five-minute timeout, cancellation, fresh cryptographic state/nonce/PKCE S256,
+  exact callback/exchange URI, duplicate parameter rejection and issued-client
+  binding. State is checked before any OAuth error or code is consumed.
+- Pinned OpenAI OIDC discovery and JWKS origin, RS256 signature verification via
+  `jose`, issuer/audience/authorized-party/expiry/nonce checks, and returning
+  account subject matching. No unverified JWT identity is trusted.
+- Separate account/workspace registrations keyed by issued client ID. The stable
+  installation UUID host ID survives sign-outs. Secure v2 records keep identity,
+  tokens, grant scopes and expiration together. The v1 scaffold's unvalidated
+  credentials are deliberately not imported.
+- PR #1's platform-secure-storage pattern, redacted errors, backup protection,
+  and no plaintext fallback. Refresh is serialized and rotating tokens saved
+  together before use. Terminal refresh errors clear tokens while preserving the
+  registration mapping. Sign-out attempts revocation twice with bounded backoff,
+  clears local tokens, and reports unconfirmed remote revocation.
+- Scope verification before model discovery or inference. Catalog reads the
+  documented `models` array, displaying only `visibility: list` entries and using
+  their `slug`. No hardcoded production model.
+- Stateless Responses HTTP/SSE using `store:false`, `stream:true`, and full local
+  relevant conversation history. Only `response.completed` with completed status
+  commits a turn. Failed/incomplete/malformed/interrupted streams discard partial
+  output; no silent retries or alternate billing route.
+- Basic in-memory text conversation with explicit Send, clearing, stop, and
+  account isolation. The UI never imports local SQLite task records.
+- Android system document picker for PNG/JPEG/WebP screenshots, five-MiB bounded
+  reads, magic-byte checks, preview/removal and explicit confirmation before
+  transmission. No broad storage or screenshot-capture permission. Unsupported
+  image/model requests surface an error. No universal image-support claim.
+- Windows supports the same text/authentication core and secure storage. Screenshot
+  selection is scoped to the Android proof of concept and disabled on Windows.
 
-After eligibility is established, implement the documented browser/loopback PKCE
-flow, validated identity and granted plan-usage scopes, refresh/revocation, model
-discovery, and streamed text/model-supported image requests. Confirm the approved
-route cannot consume purchased credits before enabling requests. Test denied
-consent, expired/revoked tokens, shared usage exhaustion, interrupted streams,
-and model/image failures without any paid fallback. On a real Android device,
-verify loopback redirect and secure storage, then confirm a completed Responses
-stream and its usage attribution in ChatGPT. Never send credentials in an issue,
-PR, or support transcript. No full task-manager implementation is included.
+## Automated validation vs. device evidence
 
-For local development, publish an environment allowing the required official
-documentation/authentication/API hosts plus Flutter's `storage.googleapis.com`
-download host and the existing package/build hosts. The current environment's
-policy snapshot does not include the OpenAI or Flutter storage hosts. This
-environment repair is separate from app eligibility.
+Automated tests cover PKCE, callback rejection, cryptographically signed test
+identities and claim/signature failures, local loopback OAuth with a fake OpenAI
+server, granted-scope denial, account catalog filtering, mock secure resume and
+rotation, concurrent refresh, revoked tokens, cancellation, SSE completion/failure,
+credit-confirmation gating, widget accessibility and SQLite persistence. These
+fixtures never contact OpenAI or consume the subscription. They do not prove
+Android Keystore encryption, browser interoperability, account eligibility,
+model capability, billing attribution or live inference.
+
+Local Flutter analysis/tests cannot run because Flutter is absent and the
+network policy denies `storage.googleapis.com` downloads. Required Flutter
+analysis, tests and Android/Windows debug builds run through GitHub Actions.
+Their actual outcomes are recorded in the PR after completion.
+
+## Physical-device acceptance procedure
+
+1. Review the license and install the current PR's Android debug APK from a
+   successful **Flutter CI** run. Extract `app-debug.apk` from the artifact.
+2. Tap **Continue with ChatGPT**. Sign in to the intended Plus account, select
+   the workspace and authorize ChatGPT plan use. Return to the app. Check that
+   the displayed registration matches and that account models load. A real
+   callback, exchange, signed identity and granted scope must succeed.
+3. Open **Manage usage**. Keep credit use OFF; save this app's usage limit below
+   100%. Verify the saved values. If these controls are unavailable, leave Send
+   disabled and record the exact restriction. Confirm settings in the app only
+   after checking them. Never enable credit use or automatic purchases.
+4. Select a listed model and send `Say exactly: Hello, world!`. Require a
+   **Response completed** message, not just partial output. Check ChatGPT usage
+   attribution for this app and verify no credits or API billing were used.
+5. Select a small redacted screenshot, review it and explicitly send an analysis
+   prompt. Record whether this particular model accepts it and completes.
+6. Restart the app, select the saved registration and reload models. Recheck
+   credit settings. After token expiry, confirm refresh works; check sign-out,
+   remote revocation, reconnect and retained registration. Never paste tokens,
+   authorization URLs, host IDs, or account details into public issues/logs.
+7. Check browser cancellation, airplane mode, activity/process recreation,
+   denied scope, unavailable/expired sessions and interrupted inference. Confirm
+   draft/history isolation and no paid fallback after every failure.
+
+Until steps 2–4 are actually observed, the user's success criterion is unmet.

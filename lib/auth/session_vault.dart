@@ -26,7 +26,7 @@ class SessionVault {
       final record = jsonDecode(value) as Map<String, dynamic>;
       if (record['host_id'] is! String || record['accounts'] is! List ||
           !RegExp(r'^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
-              .hasMatch(record['host_id'] as String)) throw const FormatException();
+              .hasMatch(record['host_id'] as String)) { throw const FormatException(); }
       for (final account in record['accounts'] as List) {
         if (account is! Map || account['client_id'] is! String ||
             account['client_id'] == 'dynamic_agent_client' ||

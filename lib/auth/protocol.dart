@@ -49,7 +49,7 @@ class AuthorizationAttempt {
       'client_id': clientId ?? 'dynamic_agent_client',
       if (clientId == null) 'agent_name_hint': 'Personal Execution App',
       'ext_agent_host_id': hostId,
-      if (idTokenHint != null) 'id_token_hint': idTokenHint!,
+      'id_token_hint': ?idTokenHint,
       'response_type': 'code', 'redirect_uri': redirect.toString(),
       'scope': requestedScopes, 'resource': resource,
       'state': state, 'nonce': nonce, 'code_challenge_method': 'S256',
@@ -88,11 +88,11 @@ Future<Map<String, dynamic>> validateIdToken(String token,
     String? subject, DateTime? now}) async {
   try {
     final parts = token.split('.');
-    if (parts.length != 3) throw const FormatException();
+    if (parts.length != 3) { throw const FormatException(); }
     final header = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[0]))))
         as Map<String, dynamic>;
     if (header['alg'] != 'RS256' || header['kid'] is! String ||
-        header.containsKey('crit')) throw const FormatException();
+        header.containsKey('crit')) { throw const FormatException(); }
     final keys = (jwks['keys'] as List).whereType<Map<String, dynamic>>().where(
       (key) => key['kid'] == header['kid'] && key['kty'] == 'RSA' &&
           (key['use'] == null || key['use'] == 'sig') &&
@@ -114,7 +114,7 @@ Future<Map<String, dynamic>> validateIdToken(String token,
         (claims['iat'] != null && (claims['iat'] as num) > seconds + 30) ||
         claims['sub'] is! String || (claims['sub'] as String).isEmpty ||
         (nonce != null && claims['nonce'] != nonce) ||
-        (subject != null && claims['sub'] != subject)) throw const FormatException();
+        (subject != null && claims['sub'] != subject)) { throw const FormatException(); }
     return claims;
   } catch (_) {
     throw const ConnectionFailure('OpenAI identity validation failed. Sign in again.');
@@ -129,7 +129,11 @@ ConnectionFailure serviceFailure(int status, Object? body, String? requestId) {
     'subscription_sharing_user_not_eligible' => 'This account or workspace is not eligible for ChatGPT plan usage.',
     'subscription_sharing_usage_limit_exceeded' => 'ChatGPT plan usage limit reached. Check Manage usage and wait for the limit to reset.',
     'subscription_sharing_usage_unavailable' => 'ChatGPT usage is temporarily unavailable. Try later.',
-    'invalid_grant' || 'invalid_refresh_token' || 'refresh_token_expired' ||
+    'subscription_sharing_unsupported_capability' => 'The selected model or image input is unsupported. Change the input or model before trying again.',
+    'subscription_sharing_route_not_supported' => 'OpenAI did not permit the documented Responses route for this registration.',
+    'chatpass_v2_scope_not_authorized' || 'chatpass_v2_invalid_authorization_context' => 'This registration does not authorize ChatGPT plan usage. Reconnect or check app eligibility.',
+    'subscription_sharing_user_unavailable' => 'Account or workspace information is temporarily unavailable. Try later.',
+    'invalid_grant' || 'invalid_refresh_token' || 'token_expired' || 'refresh_token_expired' ||
     'refresh_token_reused' || 'refresh_token_invalidated' => 'The renewable session expired or was revoked. Sign in again.',
     _ => switch (status) {
       401 => 'OpenAI did not accept this session or its plan permission. Reconnect.',

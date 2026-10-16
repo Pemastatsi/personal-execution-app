@@ -33,7 +33,14 @@ class ChatGptSession {
     final nextAccounts = accounts.where((a) => a['client_id'] != account['client_id']).toList()
       ..add(account);
     final next = <String, dynamic>{..._record!, 'accounts': nextAccounts};
-    await vault.write(next); // Only activate a credential set after durable rotation.
+    try {
+      await vault.write(next); // Only activate after durable credential rotation.
+    } catch (_) {
+      active = null;
+      models = [];
+      allowanceOnlyConfirmed = false;
+      rethrow;
+    }
     _record = next;
     active = account;
   }
@@ -80,7 +87,7 @@ class ChatGptSession {
       final received = callback.future.timeout(const Duration(minutes: 5));
       final flow = received.then((uri) => attempt.validateCallback(uri));
       // Prevent an unhandled error if browser opening fails before flow is awaited.
-      unawaited(flow.then<void>((_) {}, onError: (Object _, StackTrace __) {}));
+      unawaited(flow.then<void>((_) {}, onError: (Object _, StackTrace _) {}));
       await openBrowser(attempt.authorizationUri);
       final result = await flow;
       final tokens = await transport.json('POST', Uri.parse('$issuer/api/accounts/oauth/token'), form: {
@@ -150,7 +157,8 @@ class ChatGptSession {
               current['client_id'] as String, subject: current['subject'] as String);
       await _saveAccount(_tokenRecord(tokens, current['client_id'] as String, identity, previous: current));
     } on ConnectionFailure catch (error) {
-      if (error.status == 400 || error.status == 401) {
+      if (['invalid_grant', 'invalid_refresh_token', 'token_expired',
+          'refresh_token_expired', 'refresh_token_invalidated', 'refresh_token_reused'].contains(error.code)) {
         await _clearTokens(current);
       }
       rethrow;
