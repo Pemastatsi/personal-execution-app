@@ -94,6 +94,33 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
     _touch();
   }
 
+  Future<void> _verifyOutcome() async {
+    if (_state.verifiedMilestones > 0) return;
+    final approved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Verify this outcome?'),
+        content: const Text(
+          'Only confirm when you have checked the result yourself. '
+          'Completing an action alone does not verify the outcome.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Not yet'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('I verified it'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || approved != true) return;
+    setState(() => _state.verifiedMilestones = 1);
+    _touch();
+  }
+
   @override
   Widget build(BuildContext context) {
     final desktop = MediaQuery.sizeOf(context).width >= 850;
@@ -560,6 +587,15 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
             ],
           ],
         )),
+        if (stepDone && _state.verifiedMilestones == 0) ...[
+          const SizedBox(height: 16),
+          _primary('Verify milestone outcome', _verifyOutcome, c),
+        ],
+        if (_state.verifiedMilestones > 0) ...[
+          const SizedBox(height: 16),
+          Text('1 of 1 current outcomes verified',
+            style: TextStyle(color: c.success, fontWeight: FontWeight.w600)),
+        ],
         const SizedBox(height: 17),
         _panel(c: c, child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +662,7 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
       const SizedBox(height: 19),
       Text('Mock progress', style: TextStyle(color: c.muted)),
       const SizedBox(height: 6),
-      Text(_task.milestoneProgress, style: TextStyle(color: c.ink)),
+      Text('${_state.verifiedMilestones} of 1 current outcomes verified', style: TextStyle(color: c.ink)),
     ],
   );
 
