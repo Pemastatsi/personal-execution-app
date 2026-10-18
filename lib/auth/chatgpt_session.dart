@@ -35,15 +35,57 @@ class ChatGptSession {
       active?['access_token'] is String &&
       (active?['scopes'] as List? ?? []).contains(planScope);
 
+  /// Restore a previously verified registration after Android process restart.
+  /// Loading credentials never confirms app-credit settings or sends requests.
   Future<void> load() async {
     _record = await vault.read();
+    models = [];
+    allowanceOnlyConfirmed = false;
+    requestsPaused = false;
+    active = null;
+    final preferred = _record?['active_client_id'];
+    final saved = accounts;
+    for (final account in saved.reversed) {
+      if (account['client_id'] == preferred &&
+          account['access_token'] is String &&
+          account['refresh_token'] is String) {
+        active = account;
+        break;
+      }
+    }
+    // Backward compatibility with credentials saved by earlier test APKs,
+    // which did not persist an active-client selection.
+    active ??= saved.reversed.where(
+      (account) =>
+          account['access_token'] is String &&
+          account['refresh_token'] is String,
+    ).firstOrNull;
+  }
+
+  /// Set only if Android terminated the app during external sign-in.
+  /// No auth codes, PKCE values or tokens are retained in this indicator.
+  bool get interruptedSignIn => _record?['authorization_pending'] == true;
+
+  Future<void> _setAuthorizationPending(bool pending) async {
+    final next = <String, dynamic>{..._record!};
+    if (pending) {
+      next['authorization_pending'] = true;
+    } else {
+      next.remove('authorization_pending');
+    }
+    await vault.write(next);
+    _record = next;
   }
 
   Future<void> _saveAccount(Map<String, dynamic> account) async {
     final nextAccounts =
         accounts.where((a) => a['client_id'] != account['client_id']).toList()
           ..add(account);
-    final next = <String, dynamic>{..._record!, 'accounts': nextAccounts};
+    final next = <String, dynamic>{
+      ..._record!,
+      'accounts': nextAccounts,
+      'active_client_id': account['client_id'],
+    };
     try {
       await vault.write(
         next,
@@ -128,6 +170,9 @@ class ChatGptSession {
       final flow = received.then((uri) => attempt.validateCallback(uri));
       // Prevent an unhandled error if browser opening fails before flow is awaited.
       unawaited(flow.then<void>((_) {}, onError: (Object _, StackTrace _) {}));
+      // Persist only a non-sensitive interruption marker. A process death in
+      // Chrome cannot resume the old loopback server or PKCE attempt.
+      await _setAuthorizationPending(true);
       await openBrowser(attempt.authorizationUri);
       final result = await flow;
       if (previous == null) _pendingIssuedClientId = result.clientId;
@@ -168,6 +213,9 @@ class ChatGptSession {
       _callback = null;
       await subscription.cancel();
       await server.close(force: true);
+      if (_record?['authorization_pending'] == true) {
+        await _setAuthorizationPending(false);
+      }
     }
   }
 
