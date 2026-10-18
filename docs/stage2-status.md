@@ -101,6 +101,22 @@ network policy denies `storage.googleapis.com` downloads. Required Flutter
 analysis, tests and Android/Windows debug builds run through GitHub Actions.
 Their actual outcomes are recorded in the PR after completion.
 
+## Isolated Android test build (October 18, 2026)
+
+The debug Android application ID now has a dedicated `.authpoc` suffix.
+This lets the authentication prototype install alongside the real FocusFlow
+task manager without overwriting its installed app or its local SQLite data.
+This change has **not** yet passed its own GitHub Actions run.
+
+For testing, download the APK **only from a successful workflow whose commit
+includes this isolation change**. Do not use the older October 16 artifact,
+which was built before the separate Android application ID was added. Follow
+the physical-device acceptance steps below; in particular, verify app credit
+use is OFF and the app's usage limit is below 100% before sending any request.
+
+Do not publish screenshots showing access tokens, OAuth callback codes,
+account identifiers, or usage controls containing private information.
+
 ## Physical-device acceptance procedure
 
 1. Review the license and install the current PR's Android debug APK from a
