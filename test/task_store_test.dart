@@ -86,6 +86,47 @@ void main() {
     await store.close();
   });
 
+
+  test('real projects and tasks persist after restart and support edits', () async {
+    final file = '${directory.path}/real.sqlite';
+    final db = await TaskStore.open(databasePath: file);
+    final project = await db.createProject('Family admin');
+    final task = await db.createWorkItem(
+      title: 'Prepare application', nextAction: 'Find passport',
+      projectId: project.id);
+    expect((await db.listWorkItems()).single.title, 'Prepare application');
+    await db.updateWorkItem(task, title: 'Prepare application',
+      nextAction: 'Open form', description: 'Read instructions',
+      projectId: project.id);
+    final milestone = await db.addMilestone(task.id, 'Document ready', 'Check expiry');
+    await db.verifyMilestone(milestone.id, 'Passport checked, valid');
+    await db.close();
+
+    final reopened = await TaskStore.open(databasePath: file);
+    expect((await reopened.listProjects()).single.name, 'Family admin');
+    expect((await reopened.listWorkItems()).single.nextAction, 'Open form');
+    final outcomes = await reopened.listMilestones(task.id);
+    expect(outcomes.single.verified, isTrue);
+    expect(outcomes.single.evidence, 'Passport checked, valid');
+    await reopened.setWorkItemCompleted(task.id, true);
+    expect(await reopened.listWorkItems(), isEmpty);
+    expect((await reopened.listWorkItems(includeCompleted: true)).single.completed, isTrue);
+    await reopened.setWorkItemCompleted(task.id, false);
+    expect((await reopened.listWorkItems()).single.id, task.id);
+    await reopened.close();
+  });
+
+  test('real tasks validate empty titles and evidence', () async {
+    final db = await TaskStore.open(databasePath: '${directory.path}/validation.sqlite');
+    expect(() => db.createWorkItem(title: '  '), throwsArgumentError);
+    expect(() => db.createProject('  '), throwsArgumentError);
+    final task = await db.createWorkItem(title: 'Test');
+    final stage = await db.addMilestone(task.id, 'Check outcome', '');
+    expect(() => db.verifyMilestone(stage.id, ' '), throwsArgumentError);
+    expect((await db.listMilestones(task.id)).single.verified, isFalse);
+    await db.close();
+  });
+
   test('rejects an empty task title', () async {
     final store = await TaskStore.open(
       databasePath: '${directory.path}/tasks.sqlite',
