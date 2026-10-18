@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'demo_task.dart';
+import '../storage/execution_state.dart';
 import 'focusflow_palette.dart';
 
 enum AppView { today, focus, projects }
@@ -10,10 +11,14 @@ class FocusFlowShell extends StatefulWidget {
     super.key,
     required this.onToggleTheme,
     required this.darkMode,
+    required this.checkpoint,
+    required this.onCheckpointChanged,
   });
 
   final VoidCallback onToggleTheme;
   final bool darkMode;
+  final ExecutionCheckpoint checkpoint;
+  final VoidCallback onCheckpointChanged;
 
   @override
   State<FocusFlowShell> createState() => _FocusFlowShellState();
@@ -23,11 +28,34 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
   AppView _view = AppView.today;
   int _activeIndex = 0;
   final Set<String> _completed = {};
-  final Map<String, String> _notes = {};
   final TextEditingController _noteController = TextEditingController();
   bool _showBlockerHelp = false;
 
   DemoTask get _task => demoTasks[_activeIndex];
+  TaskCheckpoint get _state => widget.checkpoint.forTask(_task.id);
+
+  @override
+  void initState() {
+    super.initState();
+    final savedIndex = demoTasks.indexWhere(
+      (task) => task.id == widget.checkpoint.selectedTaskId,
+    );
+    _activeIndex = savedIndex < 0 ? 0 : savedIndex;
+    _noteController.text = _state.note;
+    for (final task in demoTasks) {
+      if (widget.checkpoint.forTask(task.id).actionIndex > 0) {
+        _completed.add(task.id);
+      }
+    }
+  }
+
+  void _touch() {
+    widget.checkpoint.selectedTaskId = _task.id;
+    _state.note = _noteController.text;
+    _state.actionIndex = _completed.contains(_task.id) ? 1 : 0;
+    _state.lastTouched = DateTime.now().toUtc();
+    widget.onCheckpointChanged();
+  }
 
   @override
   void dispose() {
@@ -37,20 +65,22 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
 
   void _selectTask(int index, {bool focus = false}) {
     setState(() {
-      _notes[_task.id] = _noteController.text;
+      _state.note = _noteController.text;
       _activeIndex = index;
-      _noteController.text = _notes[_task.id] ?? '';
+      _noteController.text = _state.note;
       _showBlockerHelp = false;
       _view = focus ? AppView.focus : AppView.today;
     });
+    _touch();
   }
 
   void _navigate(AppView target) {
     setState(() {
-      _notes[_task.id] = _noteController.text;
+      _state.note = _noteController.text;
       _view = target;
       _showBlockerHelp = false;
     });
+    _touch();
   }
 
   void _markDone() {
@@ -61,6 +91,7 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
         _completed.add(_task.id);
       }
     });
+    _touch();
   }
 
   @override
@@ -511,9 +542,13 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
             const SizedBox(height: 16),
             Wrap(spacing: 10, runSpacing: 10, children: [
               _primary(stepDone ? 'Undo completion' : 'Mark step done ✓', _markDone, c),
-              _secondary("I'm stuck", () => setState(() {
-                _showBlockerHelp = !_showBlockerHelp;
-              }), c),
+              _secondary("I'm stuck", () {
+                setState(() => _showBlockerHelp = !_showBlockerHelp);
+                if (_showBlockerHelp) {
+                  _state.blocker = 'Reported stuck on: ${_task.action}';
+                }
+                _touch();
+              }, c),
             ]),
             if (_showBlockerHelp) ...[
               const SizedBox(height: 17),
@@ -538,7 +573,10 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
               decoration: const InputDecoration(
                 hintText: 'Write the error message or outcome here…',
               ),
-              onChanged: (v) => _notes[_task.id] = v,
+              onChanged: (v) {
+                _state.note = v;
+                _touch();
+              },
             ),
           ],
         )),
