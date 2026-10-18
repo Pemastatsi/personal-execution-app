@@ -163,7 +163,7 @@ class _WorkWorkspaceState extends State<WorkWorkspace> {
               decoration: const InputDecoration(labelText: 'Context (optional)')),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: projectId ?? '',
+              initialValue: projectId ?? '',
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'Project'),
               items: [
