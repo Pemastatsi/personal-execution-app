@@ -30,6 +30,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Keep the ChatGPT OAuth proof of concept isolated from FocusFlow's
+            // persistent tasks, databases and production app on Android.
+            applicationIdSuffix = ".authpoc"
+        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
