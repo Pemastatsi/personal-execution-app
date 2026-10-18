@@ -12,11 +12,15 @@ class WorkWorkspace extends StatefulWidget {
     required this.store,
     required this.checkpoint,
     required this.onCheckpointChanged,
+    required this.onToggleTheme,
+    required this.darkMode,
   });
 
   final TaskStore store;
   final ExecutionCheckpoint checkpoint;
   final VoidCallback onCheckpointChanged;
+  final VoidCallback onToggleTheme;
+  final bool darkMode;
 
   @override
   State<WorkWorkspace> createState() => _WorkWorkspaceState();
@@ -30,14 +34,12 @@ class _WorkWorkspaceState extends State<WorkWorkspace> {
   bool loading = true;
   bool focus = false;
   bool showCompleted = false;
-  bool dark = false;
   final note = TextEditingController();
   final blocker = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    dark = widget.checkpoint.darkMode;
     _reload();
   }
 
@@ -283,12 +285,8 @@ class _WorkWorkspaceState extends State<WorkWorkspace> {
           IconButton(tooltip: 'Create project', icon: const Icon(Icons.create_new_folder_outlined),
             onPressed: _createProject),
           IconButton(tooltip: 'Toggle color theme',
-            icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
-            onPressed: () {
-              setState(() => dark = !dark);
-              widget.checkpoint.darkMode = dark;
-              widget.onCheckpointChanged();
-            }),
+            icon: Icon(widget.darkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+            onPressed: widget.onToggleTheme),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
