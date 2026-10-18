@@ -167,6 +167,44 @@ void main() {
       expect(reopened.allowanceOnlyConfirmed, isFalse);
     },
   );
+  test('restarts restore a saved verified account without credit confirmation', () async {
+    final api = FakeOpenAi();
+    final first = ChatGptSession(transport: api);
+    addTearDown(first.dispose);
+    await first.load();
+    await signInFixture(first, api);
+    first.allowanceOnlyConfirmed = true;
+    expect(first.interruptedSignIn, isFalse);
+    final second = ChatGptSession(transport: api);
+    addTearDown(second.dispose);
+    await second.load();
+    expect(second.active?['client_id'], 'issued-client');
+    expect(second.planEnabled, isTrue);
+    expect(second.allowanceOnlyConfirmed, isFalse);
+    expect(second.interruptedSignIn, isFalse);
+  });
+
+  test('interrupted browser sign-in indicator clears after cancellation', () async {
+    final api = FakeOpenAi();
+    final first = ChatGptSession(transport: api);
+    addTearDown(first.dispose);
+    await first.load();
+    await expectLater(
+      first.signIn((_) async {
+        final during = ChatGptSession(transport: api);
+        addTearDown(during.dispose);
+        await during.load();
+        expect(during.interruptedSignIn, isTrue);
+        first.cancelSignIn();
+      }),
+      throwsA(isA<ConnectionFailure>()),
+    );
+    final after = ChatGptSession(transport: api);
+    addTearDown(after.dispose);
+    await after.load();
+    expect(after.interruptedSignIn, isFalse);
+  });
+
   test('missing plan permission never enables models or inference', () async {
     final api = FakeOpenAi()..scopes = 'openid profile email offline_access';
     final session = ChatGptSession(transport: api);
