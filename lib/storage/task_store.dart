@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'execution_state.dart';
+
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -27,7 +29,7 @@ class TaskStore {
         );
     final database = await sqflite.openDatabase(
       filePath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE tasks (
@@ -36,6 +38,12 @@ class TaskStore {
             created_at TEXT NOT NULL
           )
         ''');
+        await db.execute('CREATE TABLE execution_state (id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL)');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('CREATE TABLE execution_state (id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL)');
+        }
       },
     );
     return TaskStore._(database);
@@ -55,6 +63,22 @@ class TaskStore {
 
   Future<List<Map<String, Object?>>> getTasks() {
     return _database.query('tasks', orderBy: 'id ASC');
+  }
+
+  /// Returns null until the user first saves a checkpoint.
+  Future<ExecutionCheckpoint?> loadExecutionCheckpoint() async {
+    final rows = await _database.query('execution_state',
+        columns: ['payload'], where: 'id = ?', whereArgs: [1], limit: 1);
+    if (rows.isEmpty) return null;
+    return ExecutionCheckpoint.decode(rows.single['payload']! as String);
+  }
+
+  /// One atomic, last-complete snapshot; individual task changes are retained.
+  Future<void> saveExecutionCheckpoint(ExecutionCheckpoint checkpoint) async {
+    await _database.insert('execution_state', {
+      'id': 1,
+      'payload': checkpoint.encode(),
+    }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
   }
 
   Future<void> close() => _database.close();
