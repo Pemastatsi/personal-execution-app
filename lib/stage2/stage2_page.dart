@@ -40,6 +40,13 @@ class _Stage2PageState extends State<Stage2Page> {
     await _run(() async {
       await _session.load();
       _ready = true;
+      if (_session.interruptedSignIn) {
+        _status = 'The browser sign-in was interrupted when Android restarted the app. Tap Continue with ChatGPT to start a new secure attempt.';
+      } else if (_session.active != null) {
+        _status = _session.planEnabled
+            ? 'Saved ChatGPT registration restored. Tap Refresh models to resume. Recheck credit settings before sending.'
+            : 'Saved ChatGPT registration restored without plan permission. Reconnect to authorize plan use.';
+      }
     });
   }
 
