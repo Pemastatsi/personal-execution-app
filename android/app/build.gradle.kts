@@ -36,6 +36,9 @@ android {
             applicationIdSuffix = ".authpoc"
         }
         release {
+            // Isolated device-acceptance APK. This is not a production signing setup.
+            // Keep the same separate app ID as the debug OAuth proof of concept.
+            applicationIdSuffix = ".authpoc"
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
