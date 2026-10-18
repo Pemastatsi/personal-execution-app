@@ -4,6 +4,7 @@ import 'storage/execution_state.dart';
 import 'storage/task_store.dart';
 import 'ui/focusflow_palette.dart';
 import 'ui/focusflow_shell.dart';
+import 'ui/work_workspace.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,7 +56,13 @@ class _PersonalExecutionAppState extends State<PersonalExecutionApp> {
       theme: FocusPalette.theme(Brightness.light),
       darkTheme: FocusPalette.theme(Brightness.dark),
       themeMode: _checkpoint.darkMode ? ThemeMode.dark : ThemeMode.light,
-      home: FocusFlowShell(
+      home: widget.store != null ? WorkWorkspace(
+        store: widget.store!,
+        checkpoint: _checkpoint,
+        onCheckpointChanged: _save,
+        darkMode: _checkpoint.darkMode,
+        onToggleTheme: _toggleTheme,
+      ) : FocusFlowShell(
         checkpoint: _checkpoint,
         onCheckpointChanged: _save,
         onToggleTheme: _toggleTheme,
