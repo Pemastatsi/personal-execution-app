@@ -1,52 +1,39 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const PersonalExecutionApp());
+import 'ui/focusflow_palette.dart';
+import 'ui/focusflow_shell.dart';
+
+void main() => runApp(const PersonalExecutionApp());
+
+/// UI demonstration. Real task persistence remains behind TaskStore and is
+/// intentionally not connected to the mock data shown by this preview.
+class PersonalExecutionApp extends StatefulWidget {
+  const PersonalExecutionApp({super.key});
+
+  @override
+  State<PersonalExecutionApp> createState() => _PersonalExecutionAppState();
 }
 
-class PersonalExecutionApp extends StatelessWidget {
-  const PersonalExecutionApp({super.key});
+class _PersonalExecutionAppState extends State<PersonalExecutionApp> {
+  ThemeMode _themeMode = ThemeMode.light;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Personal Execution',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4757A5)),
-        useMaterial3: true,
-      ),
-      home: const DevelopmentStarterPage(),
-    );
-  }
-}
-
-class DevelopmentStarterPage extends StatelessWidget {
-  const DevelopmentStarterPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: const Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.checklist_rounded, size: 40),
-                SizedBox(height: 20),
-                Text(
-                  'A calmer way to get things done',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600),
-                ),
-                SizedBox(height: 8),
-                Text('Development starter — your tasks stay on this device.'),
-              ],
-            ),
-          ),
-        ),
+      title: 'FocusFlow',
+      debugShowCheckedModeBanner: false,
+      theme: FocusPalette.theme(Brightness.light),
+      darkTheme: FocusPalette.theme(Brightness.dark),
+      themeMode: _themeMode,
+      home: FocusFlowShell(
+        onToggleTheme: () {
+          setState(() {
+            _themeMode = _themeMode == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark;
+          });
+        },
+        darkMode: _themeMode == ThemeMode.dark,
       ),
     );
   }

@@ -1,6 +1,14 @@
 # Personal Execution App
 
-An offline-first, ADHD-friendly personal task execution app for Android and Windows. This repository is an intentionally small Flutter development starter; it does not yet implement the full application or AI sign-in.
+An offline-first, ADHD-friendly personal task execution app for Android and Windows. This Flutter development starter now includes a **FocusFlow V2 Warm Minimal UI preview** with mock tasks, responsive dashboard and Focus Mode, manual step completion, and a light/dark theme toggle.
+
+The preview is not connected to real task persistence or AI inference. Its sample data and in-session state reset when restarted. The existing SQLite storage boundary remains available for later integration.
+
+## Design
+
+Approved Figma project: https://www.figma.com/design/zAwMOYl4KoiXNuGJfW75NB
+
+See [the implementation handoff](docs/focusflow-v2-handoff.md) for screen links, semantic tokens, architectural boundaries, and remaining gaps.
 
 ## Requirements
 
