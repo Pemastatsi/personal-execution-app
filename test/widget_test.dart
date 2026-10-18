@@ -18,6 +18,8 @@ void main() {
     expect(find.text('FOCUS SESSION'), findsOneWidget);
     expect(find.text('Open the editor and locate the error list.'), findsOneWidget);
 
+    await tester.ensureVisible(find.textContaining('Mark step done'));
+    await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Mark step done'));
     await tester.pumpAndSettle();
     expect(find.text('Step recorded'), findsOneWidget);
