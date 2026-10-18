@@ -53,7 +53,7 @@ class _WorkWorkspaceState extends State<WorkWorkspace> {
   Future<void> _reload() async {
     final newItems = await widget.store.listWorkItems(includeCompleted: showCompleted);
     final newProjects = await widget.store.listProjects();
-    final oldId = selected?.id ?? widget.checkpoint.selectedTaskId;
+    final oldId = widget.checkpoint.selectedTaskId;
     final matching = newItems.where((t) => t.id == oldId);
     final next = matching.isNotEmpty ? matching.first : (newItems.isEmpty ? null : newItems.first);
     final stages = next == null ? <WorkMilestone>[] : await widget.store.listMilestones(next.id);
