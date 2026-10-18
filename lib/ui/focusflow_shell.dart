@@ -387,9 +387,13 @@ class _FocusFlowShellState extends State<FocusFlowShell> {
     ));
   }
 
-  Widget _projectTile(int i, FocusPalette c) => _panel(
-    c: c,
-    padding: EdgeInsets.zero,
+  Widget _projectTile(int i, FocusPalette c) => Material(
+    color: c.panel,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18),
+      side: BorderSide(color: c.border),
+    ),
+    clipBehavior: Clip.antiAlias,
     child: ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       title: Text(demoTasks[i].title, style: const TextStyle(
